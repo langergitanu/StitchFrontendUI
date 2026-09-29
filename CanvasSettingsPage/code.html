@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html lang="en" style="width: 100%; height: 100%; min-height: 100dvh; overflow: hidden; position: relative; --tn-snipping-top: 584px; --tn-zoom-top: 883px;"><head>
+<style id="responsive-canvas-fix">
+  /* Responsive canvas fix: preserve the existing UI artwork while removing the
+     fixed desktop-sized viewport that caused clipping in external previews. */
+  *, *::before, *::after { box-sizing: border-box; }
+  html {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  body {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+  }
+  [data-purpose="two-row-app-header"] {
+    flex: 0 0 auto !important;
+  }
+  [data-purpose="tablet-gesture-dock"] {
+    flex: 0 0 2rem !important;
+    min-height: 2rem !important;
+  }
+  [data-purpose="canvas-viewport-container"] {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+  [data-purpose="digital-sheet-canvas"] {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+  [data-purpose="digital-sheet-canvas"] > div,
+  [data-purpose="digital-sheet-canvas"] > div > div {
+    min-height: 0 !important;
+  }
+  /* Keep the floating controls locked to the right edge; JS below only adjusts Y. */
+  [data-purpose="floating-zoom-control"] {
+    position: fixed !important;
+    right: 1.5rem !important;
+    top: var(--tn-zoom-top, auto) !important;
+    bottom: auto !important;
+    z-index: 80 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+  /* Snipping control stays on the right and its center is aligned to the blue dashed divider. */
+  [data-purpose="floating-ai-snipping-tool"] {
+    position: fixed !important;
+    right: 1.5rem !important;
+    top: var(--tn-snipping-top, 50%) !important;
+    bottom: auto !important;
+    z-index: 81 !important;
+    transform: none !important;
+  }
+  @media (max-width: 700px) {
+    [data-purpose="floating-zoom-control"],
+    [data-purpose="floating-ai-snipping-tool"] {
+      right: 0.75rem !important;
+    }
+  }
+</style>
+</head><body class="bg-obsidian-950 text-gray-200 font-sans antialiased overflow-hidden select-none h-screen flex flex-col justify-between"><svg aria-hidden="true" class="inline-defs-container" style="position:absolute;width:0;height:0;overflow:hidden"></svg>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ThunderNotes - CanvasPage</title>
+<!-- Tailwind CSS CDN with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Config -->
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#0a0a0d',
+              900: '#0e0e12',
+              850: '#131317',
+              800: '#1b1b1f',
+              750: '#222228',
+              700: '#2a2a32',
+              600: '#383844',
+              500: '#4e4e5e'
+            },
+            thunder: {
+              blue: '#3b82f6',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              red: '#ef4444',
+              emerald: '#10b981',
+              purple: '#a855f7'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+            handwritten: ['"Caveat"', 'cursive', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          boxShadow: {
+            'canvas': '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+            'tool-active': '0 0 15px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+            'subtle-glow': '0 0 12px rgba(239, 68, 68, 0.35)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts: Plus Jakarta Sans, Caveat, Kalam, Architects Daughter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link class="" href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&amp;family=Architects+Daughter&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="custom-scrollbars">
+    /* Custom sleek scrollbar for horizontal tool rack */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style data-purpose="canvas-ruled-paper">
+    /* Subtle ruled dark paper pattern with faint horizontal guides */
+    .ruled-paper-pattern {
+      background-color: #131318;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 100% 32px;
+    }
+    /* Vertical margin red/faint guide line common in laboratory notebooks */
+    .notebook-margin-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 72px;
+      width: 1px;
+      background: rgba(239, 68, 68, 0.18);
+      pointer-events: none;
+    }
+  </style>
+<style data-purpose="pen-animations">
+    /* Tool stand hover & active elevation */
+    .stationery-pen {
+      transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.18s ease;
+      transform-origin: bottom center;
+    }
+    .stationery-pen:hover {
+      transform: translateY(-4px) scale(1.04);
+    }
+    .stationery-pen.is-active {
+      transform: translateY(-7px) scale(1.08);
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+    }
+  </style>
+<!-- BEGIN: TabletStatusBar -->
+<!-- Ultra-subtle Android / iPad top status bar -->
+<aside class="w-full h-7 bg-obsidian-950 text-gray-400 text-xs px-6 flex items-center justify-between z-50 border-b border-obsidian-850 relative" data-purpose="system-status-bar">
+<div class="flex items-center space-x-2 font-medium tracking-tight text-gray-300">
+<span class="font-semibold">9:41 AM</span>
+<span class="text-[10px] text-gray-500">•</span>
+<span class="text-gray-400 text-[11px]">ThunderNotes Pro</span>
+</div>
+<!-- Centered subtle stylus hardware connection badge -->
+<!-- Right Side System Telemetry (WiFi, Cellular, Battery) -->
+<div class="flex items-center space-x-3 text-gray-400">
+<!-- Wi-Fi -->
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"></path>
+</svg>
+<!-- Battery -->
+<div class="flex items-center space-x-1">
+<span class="text-[11px]">86%</span>
+<div class="w-5 h-2.5 rounded-sm border border-gray-400 p-[1px] flex items-center">
+<div class="w-3.5 h-full bg-gray-200 rounded-[1px]"></div>
+</div>
+</div>
+</div>
+<div class="absolute left-1/2 -translate-x-1/2 top-1 z-50 flex items-center space-x-2 px-3 py-0.5 rounded-full bg-obsidian-900/95 backdrop-blur-md border border-obsidian-750 shadow-2xl text-[11px] text-gray-200 transition-all select-none hover:border-emerald-500/30"><svg class="w-3 h-3 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg><span class="font-medium text-gray-300 tracking-tight">Oneplus Pad 2 Stylus</span><span class="text-[10px] text-gray-500">•</span><div class="flex items-center space-x-1"><div class="w-4 h-2 rounded-[2px] border border-emerald-400/80 p-[1px] flex items-center"><div class="w-2.5 h-full bg-emerald-400 rounded-[1px]"></div></div><span class="font-mono font-semibold text-emerald-400 text-[10px]">75%</span></div></div></aside>
+<!-- END: TabletStatusBar -->
+<!-- BEGIN: TwoRowHeaderBar -->
+<header class="w-full bg-obsidian-900 border-b border-obsidian-800 shadow-xl z-40 flex flex-col flex-shrink-0" data-purpose="two-row-app-header">
+<!-- ROW 1: Document Management, Workflow Tools & App Customization -->
+<div class="w-full flex flex-col" data-purpose="header-top-navigation-sections"><div class="px-3 bg-obsidian-800 border-b border-obsidian-700 flex items-center justify-between select-none h-14" data-purpose="dedicated-note-tabs-row"><div class="flex items-center space-x-1.5 h-full pt-1.5"><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition self-center mb-1.5" title="Back to Library"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button><div class="flex items-center space-x-2 bg-obsidian-850 text-white px-3.5 h-full rounded-t-lg border-t-2 border-primary-container border-x border-obsidian-700 relative z-10 shadow-sm"><svg class="w-3.5 h-3.5 text-thunder-blue flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line></svg><span class="font-semibold tracking-tight text-white max-w-[190px] truncate text-base">Multivariable Calculus (Math 204)</span><button class="text-gray-400 hover:text-white ml-1 p-0.5 rounded hover:bg-obsidian-750 transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg></button></div><div class="flex items-center space-x-2 bg-obsidian-750/70 hover:bg-obsidian-750 text-gray-300 hover:text-white px-3.5 h-full rounded-t-lg border-t-2 border-transparent border-x border-obsidian-700/60 transition cursor-pointer relative"><svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" x2="8" y1="13" y2="13"></line><line x1="16" x2="8" y1="17" y2="17"></line></svg><span class="font-medium tracking-tight text-gray-300 max-w-[170px] truncate text-base">Linear Algebra &amp; Matrices</span><button class="text-gray-500 hover:text-gray-200 ml-1 p-0.5 rounded hover:bg-obsidian-700 transition"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg></button></div><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition self-center mb-1.5 ml-1" title="Open New Note Tab"><svg class="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg></button></div><div class="flex items-center space-x-2 text-gray-400"><div class="h-3.5 w-px bg-obsidian-700"></div><button aria-label="Toggle theme" class="w-7 h-7 rounded-full bg-[#1e293b] flex items-center justify-center text-white hover:bg-[#0f172a] transition-colors border border-blue-900/40 shadow-sm" title="Toggle Dark/Light Mode"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path></svg></button><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition" title="Window Options"><svg class="w-3.5 h-3.5 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle></svg></button></div></div><div class="h-11 px-4 flex items-center justify-between border-b border-obsidian-800/80 bg-obsidian-900" data-purpose="row-secondary-action-bar"><div class="flex items-center space-x-2"><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Thumbnail Overview"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="7" width="7" x="3" y="3"></rect><rect height="7" width="7" x="14" y="3"></rect><rect height="7" width="7" x="14" y="14"></rect><rect height="7" width="7" x="3" y="14"></rect></svg></button><div class="flex items-center space-x-1 bg-obsidian-850 px-2 py-1 rounded-md text-xs text-gray-300 border border-obsidian-750"><button class="hover:text-white px-1">‹</button><span class="font-mono font-medium text-[11px] text-gray-200">1 / 9</span><button class="hover:text-white px-1">›</button></div><div class="h-4 w-px bg-obsidian-750 mx-1"></div><div class="flex items-center space-x-0.5"><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Undo (Ctrl+Z)"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg></button><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Redo (Ctrl+Y)"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"></path></svg></button><button aria-label="Paste" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Paste"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect height="4" rx="1" ry="1" width="8" x="8" y="2"></rect></svg></button><div class="h-4 w-px bg-obsidian-750 mx-1"></div></div></div><nav class="flex items-center space-x-1 bg-obsidian-850/80 px-2 py-1 rounded-xl border border-obsidian-750" data-purpose="document-insert-tools" style="margin-left: calc(85.5906px); background-color: rgb(12, 25, 44);"><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition" title="Text Box (T)"><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><rect height="16" rx="2" width="20" x="2" y="4"></rect><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8"></path></svg></button><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition" title="Insert Image / Scan"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><rect height="18" rx="2" ry="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></button><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition" title="Ruler &amp; Geometry Guides"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M21.3 8.7L8.7 21.3c-.4.4-1 .4-1.4 0l-6-6c-.4-.4-.4-1 0-1.4L13.9 1.3c.4-.4 1-.4 1.4 0l6 6c.4.4.4 1 0 1.4z"></path><path d="M10 6l2 2M7 9l2 2M4 12l2 2"></path></svg></button><button class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-750 transition" title="Coordinate Grid &amp; Lines"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><line x1="3" x2="21" y1="9" y2="9"></line><line x1="3" x2="21" y1="15" y2="15"></line><line x1="9" x2="9" y1="3" y2="21"></line><line x1="15" x2="15" y1="3" y2="21"></line></svg></button></nav><div class="flex items-center space-x-1.5"><button aria-label="Bookmark Page" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Bookmark Page (Bookmarked)"><svg class="w-4 h-4" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" viewbox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button><button aria-label="Read Mode" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Read Mode"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Full Screen"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></button><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Lock Canvas"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></button><button aria-label="Page Margins" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Page Margins"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><path d="M7 3v18M17 3v18M3 7h18M3 17h18" stroke-dasharray="2 2"></path></svg></button><button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Change Cover / Thumbnail"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><path d="M3 9h18"></path><circle cx="8" cy="14" r="1.5"></circle><path d="m13 17 2.5-3 3.5 4H7"></path></svg></button><button class="w-8 h-8 rounded-lg bg-obsidian-800 hover:bg-obsidian-750 border border-obsidian-700 flex items-center justify-center text-gray-200 hover:text-white transition" title="Insert New Page"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewbox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg></button><button class="w-8 h-8 rounded-lg flex items-center justify-center text-white bg-obsidian-750 border border-thunder-blue/60 shadow-sm transition ring-1 ring-thunder-blue/40" title="Settings (Active)"><svg class="w-4 h-4 text-thunder-blue" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></button><button aria-label="Pages Sidebar" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-obsidian-800 transition" title="Pages Sidebar"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><rect height="18" rx="2" ry="2" width="18" x="3" y="3"></rect><line x1="9" x2="9" y1="3" y2="21"></line><path d="M14 9h4"></path><path d="M14 13h4"></path><path d="M14 17h2"></path></svg></button></div></div></div>
+<!-- ROW 2: Dedicated Drawing Tool Set & Pen Customization Tray -->
+<div class="px-4 flex items-center justify-between overflow-visible relative z-30 shadow-inner h-11 bg-obsidian-900" data-purpose="row-2-drawing-toolset-tray" style="height: 4rem !important; min-height: 4rem !important; flex: 0 0 4rem !important; padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; border-top: 1px solid rgba(255, 255, 255, 0.035) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;"><div class="flex space-x-1.5 items-start overflow-visible relative z-30 h-full pt-0.5" data-purpose="stationery-pen-rack" style="width: 30%; flex: 0 0 30%; justify-content: center; align-items: center;"><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl shadow-[0_0_14px_rgba(59,130,246,0.35)] transition-all pt-1 translate-y-1" style="filter: drop-shadow(rgba(59, 130, 246, 0.85) 0px 0px 8px) drop-shadow(rgba(6, 182, 212, 0.55) 0px 0px 16px);" title="Fountain Pen (Active)"><svg class="w-8 h-12 -rotate-12 transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 32 48"><path d="M12 4 L20 4 L20 22 L12 22 Z" fill="#1e293b" stroke="#334155" stroke-width="1.2"></path><rect fill="#f59e0b" height="2.5" rx="0.5" width="10" x="11" y="22"></rect><path d="M12 24.5 L20 24.5 L19 32 L13 32 Z" fill="#0f172a"></path><path d="M13 32 L19 32 L17.5 40 L16 46 L14.5 40 Z" fill="#fbbf24" stroke="#d97706" stroke-width="1"></path><line stroke="#78350f" stroke-linecap="round" stroke-width="0.8" x1="16" x2="16" y1="32" y2="41"></line><circle cx="16" cy="37" fill="#78350f" r="1.1"></circle><line stroke="#475569" stroke-width="0.8" x1="14" x2="14" y1="6" y2="20"></line></svg></button><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl hover:bg-obsidian-800/60 transition-all pt-1 translate-y-1" title="Ballpoint Pen"><svg class="w-7 h-12 -rotate-12 transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 28 48"><rect fill="#94a3b8" height="5" rx="1" width="6" x="11" y="2"></rect><path d="M11 7 L17 7 L17.5 28 L10.5 28 Z" fill="#2563eb"></path><path d="M17 9 L20 9 L20 20 L17 21 Z" fill="#1d4ed8"></path><rect fill="#1e293b" height="6" rx="0.5" width="7" x="10.5" y="28"></rect><line stroke="#334155" stroke-width="0.6" x1="10.5" x2="17.5" y1="30" y2="30"></line><line stroke="#334155" stroke-width="0.6" x1="10.5" x2="17.5" y1="32" y2="32"></line><path d="M11 34 L17 34 L15 42 L13 42 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="0.8"></path><path d="M13 42 L15 42 L14 45.5 Z" fill="#475569"></path><circle cx="14" cy="45.5" fill="#1e40af" r="0.8"></circle></svg></button><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl hover:bg-obsidian-800/60 transition-all pt-1 translate-y-1" title="Highlighter"><svg class="w-8 h-12 -rotate-12 transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 32 48"><rect fill="#1e293b" height="17" rx="2" stroke="#334155" stroke-width="1" width="12" x="10" y="3"></rect><rect fill="#475569" height="2.5" width="12" x="10" y="20"></rect><path d="M10.5 22.5 L21.5 22.5 L20 33 L12 33 Z" fill="#38bdf8"></path><rect fill="#1e293b" height="3.5" rx="0.5" width="8" x="12" y="33"></rect><path d="M12.5 36.5 L19.5 36.5 L18 44.5 L12.5 41 Z" fill="#facc15" stroke="#eab308" stroke-width="0.8"></path></svg></button><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl hover:bg-obsidian-800/60 transition-all pt-1 translate-y-1" title="Eraser"><svg class="w-8 h-11 transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 32 40"><g transform="rotate(18 16 20)"><rect fill="#f8fafc" height="12" rx="1.5" stroke="#cbd5e1" stroke-width="1" width="16" x="8" y="6"></rect><path d="M8 18 L24 18 L24 32 L8 32 Z" fill="#2563eb"></path><line stroke="#60a5fa" stroke-width="1" x1="8" x2="24" y1="22" y2="22"></line><rect fill="#1d4ed8" height="5" rx="0.5" width="10" x="11" y="24"></rect></g></svg></button><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl hover:bg-obsidian-800/60 transition-all pt-1 translate-y-1" title="Lasso Selection"><svg class="w-7 h-10 text-thunder-blue transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 28 36"><ellipse cx="14" cy="15" rx="9" ry="11" stroke="#38bdf8" stroke-dasharray="3.5 2.5" stroke-width="1.7"></ellipse><path d="M16 24 C14 26 12 28 10 32 C8.5 34.5 13 33.5 14.5 31" stroke="#38bdf8" stroke-linecap="round" stroke-width="1.6"></path><circle cx="14.5" cy="31" fill="#38bdf8" r="1.8"></circle></svg></button><button class="stationery-pen relative group flex items-start justify-center w-11 h-14 rounded-xl hover:bg-obsidian-800/60 transition-all pt-1 translate-y-1" title="Region Fill / Dropper"><svg class="w-7 h-11 transition-transform group-hover:scale-105 scale-110" fill="none" viewbox="0 0 28 44"><path d="M10 8 L18 8 L17 14 L11 14 Z" fill="#64748b" stroke="#475569" stroke-width="1"></path><rect fill="#94a3b8" height="4" rx="1" width="4" x="12" y="4"></rect><path d="M11 14 L17 14 L17 28 C17 31 15.5 33 14 36 C12.5 33 11 31 11 28 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="1.2"></path><rect fill="#ffffff" height="9" opacity="0.7" rx="1" width="2" x="13" y="16"></rect><circle cx="14" cy="40" fill="#38bdf8" r="1.8"></circle></svg></button></div><div class="flex items-center space-x-2 flex-shrink-0" data-purpose="quick-color-palette" style="width: 20%; flex: 0 0 20%; justify-content: center; align-items: center; margin-left: 0px;"><div class="flex items-center space-x-1.5 px-2 py-1 bg-obsidian-900 rounded-full border border-obsidian-750"><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(239, 68, 68);" title="Red"></button><button class="w-4 h-4 rounded-full ring-2 ring-[#3b82f6] ring-offset-2 ring-offset-obsidian-900 scale-110" style="background-color: rgb(59, 130, 246);" title="Blue (Active)"></button><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(16, 185, 129);" title="Green"></button><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(245, 158, 11);" title="Yellow"></button><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(168, 85, 247);" title="Pink"></button><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(255, 255, 255);" title="White"></button><button class="w-4 h-4 rounded-full hover:scale-125 transition-transform" style="background-color: rgb(217, 119, 6);" title="Orange"></button><button class="w-4 h-4 rounded-full border border-slate-500 hover:scale-125 transition-transform" style="background-color: rgb(120, 53, 15);" title="Brown"></button></div><div class="flex items-center"><button class="flex items-center space-x-1 pl-1 pr-1.5 py-1 rounded-full bg-obsidian-800 border border-obsidian-700 hover:border-thunder-blue transition" title="Custom Color Picker Wheel"><span class="w-5 h-5 rounded-full overflow-hidden inline-grid grid-cols-2 shadow-inner"><span class="bg-thunder-red h-2.5 w-2.5 block"></span><span class="bg-thunder-blue h-2.5 w-2.5 block"></span><span class="bg-thunder-emerald h-2.5 w-2.5 block"></span><span class="bg-amber-400 h-2.5 w-2.5 block"></span></span><svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></button></div></div><div class="flex items-center space-x-2 flex-shrink-0" data-purpose="stroke-width-presets" style="width: 15%; flex: 0 0 15%; justify-content: center; align-items: center;"><button class="flex flex-col items-center justify-center w-8 h-10 rounded-lg hover:bg-obsidian-800 transition" title="Stroke 0.35 mm"><span class="w-1.5 h-1.5 rounded-full bg-gray-400 mb-1"></span><span class="text-[10px] font-mono text-gray-400">0.35</span></button><button class="flex flex-col items-center justify-center w-9 h-10 rounded-lg bg-obsidian-750 border border-thunder-blue/40 shadow-sm transition" title="Stroke 0.50 mm (Active)"><span class="w-2.5 h-2.5 rounded-full bg-thunder-blue mb-1 shadow-[0_0_6px_rgba(59,130,246,0.6)]"></span><span class="text-[10px] font-mono font-bold text-thunder-blue">0.50</span></button><button class="flex flex-col items-center justify-center w-8 h-10 rounded-lg hover:bg-obsidian-800 transition" title="Stroke 0.80 mm"><span class="w-3 h-3 rounded-full bg-gray-400 mb-1"></span><span class="text-[10px] font-mono text-gray-400">0.80</span></button></div><div class="flex items-center space-x-1.5 flex-shrink-0" data-purpose="drawing-toggles" style="width: 35%; flex: 0 0 35%; justify-content: center; align-items: center;"><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-thunder-blue/30 text-thunder-blue flex items-center justify-center transition hover:bg-obsidian-750" title="Auto Shape Detection"><img alt="Shapes" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1UyN5LY9D9WxKFPWSw5JWsOyz9Y5Pg5kQiEGHFE7ihbgcNvhXIGUgWzpmA6Fbb4gcKGvk7QqudRrggC2JKT2a8-0XuPzAuEIIRsMJKMsaMgi5rGD6TuPRNbFwgYdugd1hzpFDYgIACuPlh9o65tXXYmc1Ujk018nlPRRFCnvonixlj7fXGWHB-_MRTtm1TfNWv3VOEEAUs44Q_SYGeqeBIqHojYQ8DOKfkGDYf-7zGaNBmjMMDDczlY"/></button><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-thunder-blue/30 text-thunder-blue flex items-center justify-center transition hover:bg-obsidian-750 shadow-sm" title="Create Table"><img alt="Grid" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1U2HZFYMZHvH2Pznrnil4Kyy21JCBKowBQf_F8OQB3QIYw0ivQh8ujwFhgg8a3V7mLRFo9-3w0ryiZe1DtxIPkkkW8EGpP_YOhkQPzriCtBZYtV-n-LXp-Uz6OjOzj4R7rEB3MV_TWpcgdzT_u-gVCJ6o8-Cqtp2tDlbjIzTbmgUh0N3fvdUURNmSY2HLSllgbx6IRp5F0pvtJk70E4lV5uS_I9-8T-_pln0107b2JiXtbRRxP5suxU"/></button><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-thunder-blue/30 text-thunder-blue flex items-center justify-center transition hover:bg-obsidian-750" title="Insert Space"><img alt="Insert Space" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1Vm6_ryDkOSfMRUaDMWjmSKSM4lTuNHAyXM1LBGlaLqW8xdLTKvuOOL2WUpbT96xeqYuPjeDk5Wl7teQRcDHJS1Jojd5o__SwbRAPfUqkeBGrIpqCOA4yc0hVitwBZ9CFoYtzkMgu_8KPxuLnoO2diu4Ax9IvoHCC3NFR3zzS8QkLXZc4E73RVjeb3uO_Dqre1CSIuormjsi6OftELTZ0qHL-DPp5wfCFsxG3r31U5WlDnLPJCVYo4"/></button><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-thunder-blue/30 text-thunder-blue flex items-center justify-center transition hover:bg-obsidian-750 p-1" title="Vertical Center Alignment"><img alt="Center Alignment" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1XQk9RZ_KypTW69ScdMTIexUscRaP44OUHqz4VTl_ed7XRIuprXzP5oFQ5-VCGIika_gfx9bULKb2hszgsu_lSqC8mEC-dLkJMSBN0BumQlNh_8oWQmoLRSmF5hZOHNNSayInlY-I8XjJB4ZR1bU6C0nHv8Z29hIfDzkS1KjCBmH0QvCN1VeS2aguaVJ0UVyMzrtHCI3rwS1KInbekkxbZ5TWdVO39SwDfrY0sTg3UlLOou2I03bNAq"/></button><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-thunder-blue/30 text-thunder-blue flex items-center justify-center transition hover:bg-obsidian-750 p-1" title="Horizontal Left Alignment"><img alt="Left Alignment" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1W4sy_Vjt5zEqEelUcv81VuIqzyRCwtOouennLAXIA0DJrH_NSKPe5KvuIQ-fYCHJShudMfgFwEIcrrq0RDwWjKGLsUn2XD8g1yPk65eoSgWyFRcpSRzOeGvVW_HoNVJnNIv2RY2t9rUXyWp3MeF75Peml5rxNhei8hTbIzJKAD5IOVY-mfssraLz4LwwFDEVzK5bwUy6HBlstyFgbXOkeZnJc-W4Y4-ntQIEBGCgDBh2kA2O2Fh-u-"/></button><button class="w-12 h-12 rounded-xl flex items-center justify-center bg-obsidian-800 border border-obsidian-700/60 hover:bg-obsidian-750 transition-colors shadow-sm" title="Horizontal Center Alignment"><img alt="Horizontal Center Alignment" class="w-full h-full object-contain p-0.5" src="https://lh3.googleusercontent.com/aida/AEtjO1UQwR3utf-rsMey4sqU0ghy_TyLR74M2kTuVQtpywbIPCLRzh5m33HhI5cLd3FV-B1k4eUcCy95BlAqUlLbgwMtvAdmRgDFF8qHrPPXI11Ajvs9vbwxutHMl_j5HYi7C2lifDIxFs8IU53KceLDDE6k3fJabXfxZNjAx6lbc8Mj6ZO4dUxGNSaT_Cnksa81YFjmNAW1ROp5jZRsqaMehZCvmlstHU9CugQEIQ_vdgTdj0QKXURlwIkB"/></button><button class="w-12 h-12 rounded-xl bg-obsidian-800 border border-emerald-500/30 text-emerald-400 flex items-center justify-center transition hover:bg-obsidian-750" title="Finger Mode (Touch Drawing / Rejection)"><svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 11V4.5a1.5 1.5 0 0 0-3 0v7.8"></path><path d="M9 13.5V11a1.5 1.5 0 0 0-3 0v4.2c0 4.2 2.8 6.8 6.5 6.8h1.2c3.8 0 5.8-2.6 5.8-6.3v-2.2a1.5 1.5 0 0 0-3 0v-.5a1.5 1.5 0 0 0-3 0V11"></path><path d="M10.5 1.5a3.5 3.5 0 0 1 3.5 3.5"></path><path d="M8 3a6 6 0 0 1 6 6"></path></svg></button></div></div>
+</header>
+<!-- END: TwoRowHeaderBar -->
+<!-- BEGIN: MainCanvasWorkspace -->
+<main class="flex-1 w-full bg-obsidian-950 overflow-hidden relative flex items-center justify-center pt-6 px-3 pb-3 sm:p-5" data-purpose="canvas-viewport-container">
+<article class="relative w-full h-full max-w-full bg-[#fcfbf9] rounded-lg shadow-2xl border border-slate-200 p-5 sm:p-6 overflow-hidden text-slate-800 flex flex-col justify-between select-none mt-2" data-purpose="digital-sheet-canvas" style="background-image: radial-gradient(rgb(203, 213, 225) 0.75px, transparent 0.75px); background-size: 24px 24px;"><div class="flex flex-col flex-1 justify-between h-full"><div class="flex-1 flex flex-col justify-between overflow-y-auto pr-1"><div class="flex flex-col space-y-2"><div class="flex items-start justify-between border-b-2 border-blue-700/60 pb-1.5"><div><div class="flex items-center space-x-2 text-xs uppercase tracking-widest text-blue-800 font-bold" style="font-family: 'Kalam', cursive;"><span class="">LECTURE NOTE #14</span><span class="text-blue-700">•</span><span class="">MULTIVARIABLE CALCULUS &amp; DIFFERENTIAL FORMS</span></div><h1 class="text-xl sm:text-2xl font-bold tracking-tight text-blue-950 mt-0.5" style='font-family: "Architects Daughter", cursive;'>Stokes' Theorem, Curl &amp; Flux Integrals in ℝ³</h1><p class="text-xs text-blue-900/80" style='font-family: "Caveat", cursive;'>Instructor: Dr. Vance • Applied Math Lab • Fall Semester • Notebook Entry</p></div><div class="text-right"><div class="inline-block border-b-2 border-blue-700 pb-0.5"><span class="text-xs font-bold text-blue-800" style='font-family: "Kalam", cursive;'>PAGE NO.</span><span class="text-base font-bold text-blue-950 ml-1" style='font-family: "Architects Daughter", cursive;'>01</span></div><div class="text-xs text-blue-800 tracking-wider uppercase font-semibold" style='font-family: "Kalam", cursive;'>LANDSCAPE VIEW</div></div></div><div class="flex items-baseline justify-between py-1"><div class="text-lg sm:text-xl text-blue-950 tracking-wide leading-tight" style='font-family: "Caveat", cursive; font-weight: 700;'>Core Idea: The circulation of a vector field F around a closed boundary curve ∂S equals the net flux of curl(F) passing through the surface S!</div><span class="text-xs text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded font-bold self-center shadow-sm" style='font-family: "Architects Daughter", cursive;'>Exam 2 Focus ★</span></div><div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-stretch"><div class="md:col-span-2 p-2.5 rounded-lg bg-blue-50/90 border border-blue-300 shadow-sm flex flex-col items-center justify-center text-center"><div class="text-xs text-blue-900 uppercase tracking-wider font-bold" style='font-family: "Kalam", cursive;'>Fundamental Formula of Stokes' Theorem</div><div class="text-lg sm:text-2xl text-blue-950 font-bold tracking-wide py-1" style='font-family: "Architects Daughter", cursive;'>∮_{∂S} F · dr = ∬_S (∇ × F) · dS = ∬_S (∇ × F) · n̂ dσ</div><div class="text-xs text-blue-900 leading-snug" style='font-family: "Caveat", cursive; font-size: 15px;'>Boundary orientation induced via Right-Hand Rule: fingers wrap along curve ∂S, thumb points along unit normal n̂ (r'(t) × n̂ &gt; 0)</div></div><div class="p-2.5 rounded-lg bg-emerald-50/90 border border-emerald-300 shadow-sm flex flex-col justify-center"><div class="flex items-center space-x-1 mb-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span><span class="text-xs font-bold text-emerald-900 uppercase" style='font-family: "Kalam", cursive;'>Green's Theorem Reduction</span></div><p class="text-xs text-emerald-950 leading-snug" style='font-family: "Caveat", cursive; font-size: 15px;'>When S is flat in xy-plane with n̂ = k̂, Stokes reduces to 2D planar curl scalar:<br/><span class="font-bold font-mono text-[13px] text-emerald-900 inline-block mt-0.5">∮_C (P dx + Q dy) = ∬_R (∂Q/∂x - ∂P/∂y) dA</span></p></div></div><div class="grid grid-cols-3 gap-2 bg-slate-50/80 p-2.5 rounded border border-blue-200"><div class="text-xs text-slate-800" style='font-family: "Kalam", cursive;'><strong class="text-blue-900">1. Smooth Surface:</strong> S is piecewise-smooth oriented 2D manifold bounded by closed loop ∂S.</div><div class="text-xs text-slate-800" style='font-family: "Kalam", cursive;'><strong class="text-blue-900">2. Continuous Field:</strong> F(x,y,z) has continuous C¹ partial derivatives on an open region containing S.</div><div class="text-xs text-slate-800" style='font-family: "Kalam", cursive;'><strong class="text-blue-900">3. Circulation:</strong> Line integral along perimeter curve equals surface summation of infinitesimal vortices!</div></div><div class="grid grid-cols-3 gap-2 bg-blue-50/50 p-2 rounded border border-blue-200/80"><div class="flex items-center space-x-1 text-xs text-blue-950" style="font-family: 'Caveat', cursive; font-size: 15px;"><span class="font-bold text-blue-900">Curl Determinant:</span><span class="font-mono text-[11px] font-semibold text-blue-900">∇×F = det [i, j, k; ∂/∂x, ∂/∂y, ∂/∂z; P, Q, R]</span></div><div class="flex items-center space-x-1 text-xs text-blue-950" style="font-family: 'Caveat', cursive; font-size: 15px;"><span class="font-bold text-blue-900">Differential 1-Form:</span><span class="font-mono text-[11px] font-semibold text-blue-900">∫_{∂S} ω = ∫_S dω (Generalized Stokes)</span></div><div class="flex items-center space-x-1 text-xs text-blue-950" style="font-family: 'Caveat', cursive; font-size: 15px;"><span class="font-bold text-blue-900">Closed Boundary:</span><span class="font-mono text-[11px] font-semibold text-blue-900">∂(∂S) = ∅ (Boundary of boundary is empty)</span></div></div></div><div class="w-full my-1 border-t-2 border-dashed border-blue-700"></div><div class="flex flex-col space-y-2"><div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 items-stretch"><div class="p-2.5 rounded-lg bg-white border border-blue-200 shadow-sm flex flex-col justify-between relative"><span class="text-xs text-blue-950 mb-1 self-start font-bold uppercase" style='font-family: "Architects Daughter", cursive;'>Fig 1.1: Oriented Surface S &amp; Boundary ∂S</span><svg class="w-full h-24" fill="none" stroke="currentColor" viewbox="0 0 240 120"><ellipse cx="120" cy="95" rx="80" ry="18" stroke="#1d4ed8" stroke-dasharray="3 3" stroke-width="2"></ellipse><path d="M40,95 C40,42 75,22 120,22 C165,22 200,42 200,95" fill="none" stroke="#1d4ed8" stroke-width="2.2"></path><path d="M120,52 L120,18" stroke="#059669" stroke-linecap="round" stroke-width="2.2"></path><polygon fill="#059669" points="116,20 120,10 124,20"></polygon><text fill="#047857" font-family="'Architects Daughter', cursive" font-size="11" font-weight="bold" x="128" y="20">n̂ (Normal)</text><path d="M200,95 C200,105 165,113 120,113 C75,113 40,105 40,95" stroke="#dc2626" stroke-width="2.2"></path><polygon fill="#dc2626" points="132,110 142,113 132,116"></polygon><text fill="#b91c1c" font-family="'Architects Daughter', cursive" font-size="11" font-weight="bold" x="148" y="116">∂S (dr)</text><text fill="#1d4ed8" font-family="'Architects Daughter', cursive" font-size="13" font-weight="bold" x="108" y="64">S ⊂ ℝ³</text></svg><div class="mt-1 text-xs text-amber-950 bg-amber-50 px-2 py-1 rounded border border-amber-300 text-center leading-tight font-bold" style='font-family: "Caveat", cursive; font-size: 14px;'>Orientation note: Interior stays on left while traversing boundary ∂S with head pointing in n̂ direction</div></div><div class="p-2.5 rounded-lg bg-white border border-blue-200 shadow-sm flex flex-col justify-between"><span class="text-xs text-blue-950 mb-1 font-bold uppercase" style='font-family: "Architects Daughter", cursive;'>Fig 1.2: Micro-Circulation &amp; Curl Vortex</span><svg class="w-full h-24" fill="none" viewbox="0 0 240 120"><rect fill="#f8fafc" height="88" rx="6" stroke="#1d4ed8" stroke-dasharray="3 2" stroke-width="1.5" width="210" x="15" y="12"></rect><circle cx="60" cy="56" r="22" stroke="#1d4ed8" stroke-dasharray="3 3" stroke-width="1.6"></circle><circle cx="120" cy="56" r="22" stroke="#0891b2" stroke-dasharray="3 3" stroke-width="1.6"></circle><circle cx="180" cy="56" r="22" stroke="#7c3aed" stroke-dasharray="3 3" stroke-width="1.6"></circle><polygon fill="#1d4ed8" points="60,31 66,34 60,37"></polygon><polygon fill="#0891b2" points="120,31 126,34 120,37"></polygon><polygon fill="#7c3aed" points="180,31 186,34 180,37"></polygon><text fill="#1e293b" font-family="'Architects Daughter', cursive" font-size="11" font-weight="bold" x="44" y="60">∇×F₁</text><text fill="#1e293b" font-family="'Architects Daughter', cursive" font-size="11" font-weight="bold" x="104" y="60">∇×F₂</text><text fill="#1e293b" font-family="'Architects Daughter', cursive" font-size="11" font-weight="bold" x="164" y="60">∇×F₃</text></svg><div class="flex items-center space-x-1 text-xs text-blue-950 mt-1 font-bold" style="font-family: 'Caveat', cursive; font-size: 15px;"><span class="w-2 h-2 rounded-full bg-cyan-600"></span><span class="leading-tight">Internal micro-whirls cancel pairwise on shared edges; only perimeter boundary survives!</span></div></div><div class="p-2.5 rounded-lg bg-white border border-blue-200 shadow-sm flex flex-col justify-between"><span class="text-xs text-blue-950 mb-1 font-bold uppercase" style='font-family: "Architects Daughter", cursive;'>Fig 1.3: Physical Vortex Interpretation</span><div class="h-24 bg-slate-50 rounded border border-blue-200 flex flex-col items-center justify-center p-1.5 text-center"><div class="text-sm font-bold text-blue-950 mb-0.5" style='font-family: "Architects Daughter", cursive;'>curl(v) = ∇ × v ≠ 0</div><div class="text-xs text-slate-800 leading-snug" style='font-family: "Caveat", cursive; font-size: 14px;'>Paddle wheel spins with local angular velocity ω = ½ curl(v).</div><div class="mt-1 inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-blue-100 text-blue-950 text-xs font-bold" style="font-family: 'Architects Daughter', cursive;"><span class="">Ampère Analogy: ∮ B · dr = μ₀ I_enc</span></div></div><div class="flex items-center space-x-1 text-xs text-amber-950 mt-1 font-bold" style="font-family: 'Caveat', cursive; font-size: 15px;"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="leading-tight">Irrotational field (curl F = 0) ⇒ Conservative field (F = ∇f)</span></div></div></div><div class="px-3 py-2 rounded-md bg-amber-50/95 border border-amber-300 flex items-center justify-between text-xs text-amber-950 font-bold" style='font-family: "Kalam", cursive;'><div class="flex items-center space-x-2"><span class="text-amber-900 uppercase tracking-wide">Theorem Corollary:</span><span class="">If S₁ and S₂ share identical boundary ∂S (capped balloon/tin can), then ∬_{S₁} (∇ × F) · dS = ∬_{S₂} (∇ × F) · dS.</span></div><span class="text-blue-800 underline">Independence of Surface</span></div><div class="grid grid-cols-2 gap-2 bg-slate-50/90 px-3 py-1.5 rounded border border-blue-200 text-xs text-slate-800" style='font-family: "Kalam", cursive;'><div class=""><strong class="text-blue-900">Key Computation Strategy:</strong> When flux ∬_S (∇×F)·dS is hard over curved S, evaluate line integral ∮_{∂S} F·dr instead (or swap S to flat disk)!</div><div class=""><strong class="text-blue-900">Right-Hand Rule Check:</strong> Walk along ∂S with head in normal n̂ direction; region S must lie on your left-hand side.</div></div></div></div><div class="flex items-center justify-between border-t border-slate-200 pt-2.5 mt-2 text-xs text-slate-600"><div class="flex items-center space-x-2"><div class="w-5 h-5 rounded bg-blue-600 flex items-center justify-center font-black text-[10px] text-white shadow-sm">⚡</div><span class="font-semibold tracking-wide text-slate-900">ThunderNotes Canvas Pro</span><span class="text-slate-300">|</span><span class="text-slate-500 font-mono text-[11px]">Landscape Sheet • 1920 × 1080 px</span></div><div class="flex items-center space-x-3"><span class="text-slate-500 font-mono text-[11px]">Math Notebook #14 • Stokes' Theorem</span><div class="px-2.5 py-0.5 rounded bg-slate-100 border border-slate-300 text-blue-700 font-mono font-bold text-xs">Page 2 of 2</div></div></div></div></article>
+<div class="fixed right-8 z-30 flex flex-col items-center group" data-purpose="floating-ai-snipping-tool" style="bottom: calc(264.874px + 7.5rem); right: calc(315px + 1rem) !important;"><button class="w-11 h-11 rounded-full bg-obsidian-850/90 hover:bg-obsidian-800 backdrop-blur-md border border-obsidian-750 hover:border-thunder-blue/60 shadow-2xl flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 group ring-4 ring-blue-400/60 shadow-[0_0_35px_rgba(56,189,248,0.7)] animate-pulse" title="Smart AI Snipping &amp; Formula OCR (Lasso / Crop)"><svg class="w-5 h-5 text-thunder-blue group-hover:text-blue-200 transition-colors" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" x2="8.12" y1="4" y2="15.88"></line><line x1="14.47" x2="20" y1="14.48" y2="20"></line><line x1="8.12" x2="12" y1="8.12" y2="12"></line></svg><span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-gradient-to-r from-thunder-blue to-purple-500 flex items-center justify-center text-[8px] font-black text-white shadow-sm">✦</span></button></div><div class="fixed bottom-16 right-8 bg-obsidian-850/90 backdrop-blur-md border border-obsidian-750 px-4 py-2 rounded-full shadow-2xl flex items-center space-x-3.5 z-30 scale-110" data-purpose="floating-zoom-control" style="bottom: calc(56.6929px + 4rem); right: calc(315px + 1rem) !important;">
+<button class="text-gray-400 hover:text-white text-base font-bold px-1.5 transition" title="Zoom Out">−</button>
+<span class="text-sm font-mono text-gray-200 font-semibold select-none">100%</span>
+<button class="text-gray-400 hover:text-white text-base font-bold px-1.5 transition" title="Zoom In">+</button>
+<div class="h-4 w-px bg-obsidian-700"></div>
+<button class="text-xs text-thunder-blue font-semibold hover:underline px-1" title="Fit to Screen">Fit</button>
+</div>
+<aside class="fixed top-[7.5rem] bottom-10 right-3 w-[315px] bg-obsidian-900 border border-slate-700/70 shadow-2xl z-50 flex flex-col text-gray-200 select-none overflow-hidden rounded-2xl" data-purpose="canvas-settings-sidebar" style="top: calc(10px + 7.5rem);"><div class="px-4 py-3 bg-obsidian-850 border-b border-obsidian-750 flex items-center justify-between flex-shrink-0"><div class="flex items-center space-x-2"><div class="w-6 h-6 rounded-md bg-obsidian-800 border border-obsidian-700 flex items-center justify-center text-thunder-blue"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg></div><div class="flex flex-col"><span class="text-xs font-bold tracking-tight text-white">Canvas Settings</span><span class="text-[10px] text-gray-400 font-mono">Notebook Preferences</span></div></div><button class="w-6 h-6 rounded-md hover:bg-obsidian-750 flex items-center justify-center text-gray-400 hover:text-white transition" title="Close Settings"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg></button></div><div class="flex-1 overflow-y-auto px-3.5 py-3 space-y-3"><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-thunder-blue"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">Textbox</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 space-y-2 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="flex items-center justify-between"><span class="text-[11px] text-gray-400 font-medium">Default Underline</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-2 cursor-pointer shadow-sm min-w-[76px]"><span class="font-mono text-[11px]">Wavy</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="flex items-center justify-between"><span class="text-[11px] text-gray-400 font-medium">Default Size</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-2 cursor-pointer shadow-sm min-w-[76px]"><span class="font-mono text-[11px]">16pt</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="flex items-center justify-between"><span class="text-[11px] text-gray-400 font-medium">Default Font</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-2 cursor-pointer shadow-sm min-w-[110px]"><span class="text-[11px] font-medium truncate">Patrick Hand</span><svg class="w-3 h-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div></div><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">Page Margin</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 grid grid-cols-2 gap-2 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="flex flex-col space-y-1"><span class="text-[11px] text-gray-400 font-medium truncate">Horizontal</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1 cursor-pointer shadow-sm"><span class="font-mono text-[11px]">1cm</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="flex flex-col space-y-1"><span class="text-[11px] text-gray-400 font-medium truncate">Vertical</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1 cursor-pointer shadow-sm"><span class="font-mono text-[11px]">1cm</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div></div><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">Lasso Shift</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 grid grid-cols-2 gap-2 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="flex flex-col space-y-1"><span class="text-[11px] text-gray-400 font-medium truncate">Horizontal Shift</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1 cursor-pointer shadow-sm"><span class="font-mono text-[11px]">50%</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div><div class="flex flex-col space-y-1"><span class="text-[11px] text-gray-400 font-medium truncate">Vertical Shift</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1 cursor-pointer shadow-sm"><span class="font-mono text-[11px]">50%</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div></div><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">Gridline</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 space-y-2 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="flex items-center justify-between"><span class="text-[11px] text-gray-400 font-medium">Grid Lines</span><div class="flex items-center space-x-2 font-mono text-[11px]"><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"><span class="font-mono">10</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div><span class="text-gray-400 font-bold">×</span><div class="px-2.5 py-1.5 rounded-lg bg-[#1a1c23] border border-slate-700 hover:border-blue-500/60 transition-colors text-gray-200 flex items-center justify-between gap-1.5 cursor-pointer shadow-sm"><span class="font-mono">20</span><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div></div></div><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-thunder-purple"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">Brush Thickness</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 space-y-2 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="flex items-center justify-between"><span class="text-[11px] text-gray-400 font-medium">Uniform Scaling</span><div class="flex items-center p-0.5 rounded-full bg-[#1a1c23] border border-slate-700/80 shadow-inner"><button class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[10px] flex items-center space-x-1 shadow-sm transition"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="">Yes</span></button><button class="px-2 py-0.5 rounded-full text-gray-400 hover:text-gray-200 text-[10px] font-medium transition">No</button></div></div></div></div><div class="rounded-lg bg-obsidian-850/90 border border-obsidian-750 overflow-hidden"><div class="px-3 py-1.5 flex items-center justify-between bg-obsidian-800/80 cursor-pointer hover:bg-obsidian-800 transition"><div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-thunder-blue"></span><span class="text-xs font-semibold text-gray-200 tracking-wide">AI Snipping</span></div><span class="w-6 h-6 rounded-full flex items-center justify-center text-center leading-none select-none bg-blue-600/30 text-blue-400 border border-blue-500/50 shadow-sm text-sm font-bold cursor-pointer hover:scale-105 transition-all"><span class="flex items-center justify-center leading-none translate-y-[-1px]">+</span></span></div><div class="p-2.5 space-y-2.5 text-xs border-t border-obsidian-750/60 bg-obsidian-850/40"><div class="space-y-1"><div class="flex items-center justify-between text-[11px]"><span class="text-gray-300 font-medium">ChatGPT API</span><span class="text-[9px] font-mono text-emerald-400 uppercase">Connected</span></div><div class="flex items-center bg-obsidian-800 border border-obsidian-700 rounded px-2 py-1.5 justify-between"><span class="font-mono text-[11px] text-gray-300 tracking-wider truncate max-w-[190px]">sk-proj-••••••••••••4a9b</span><div class="flex items-center space-x-1 text-gray-400 hover:text-white cursor-pointer ml-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div></div></div><div class="space-y-1"><div class="flex items-center justify-between text-[11px]"><span class="text-gray-300 font-medium">Gemini API</span><span class="text-[9px] font-mono text-emerald-400 uppercase">Connected</span></div><div class="flex items-center bg-obsidian-800 border border-obsidian-700 rounded px-2 py-1.5 justify-between"><span class="font-mono text-[11px] text-gray-300 tracking-wider truncate max-w-[190px]">AIzaSy••••••••••••3k1x</span><div class="flex items-center space-x-1 text-gray-400 hover:text-white cursor-pointer ml-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></div></div></div></div></div></div></aside></main>
+<!-- END: MainCanvasWorkspace -->
+<!-- BEGIN: BottomTabletNavDock -->
+<!-- Tablet System Navigation bar (Back, Home, Multitask gesture controls) -->
+<footer class="w-full h-8 bg-obsidian-950 border-t border-obsidian-850 flex items-center justify-between px-6 z-40" data-purpose="tablet-gesture-dock">
+<div class="flex items-center space-x-2 text-xs text-gray-500 font-mono">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="">Cloud Engine: Online</span>
+</div>
+<!-- Centered Android / Tablet standard virtual buttons -->
+<div class="flex items-center space-x-12 text-gray-500">
+<!-- Back Chevron -->
+<button class="hover:text-gray-200 transition">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<polyline points="15 18 9 12 15 6"></polyline>
+</svg>
+</button>
+<!-- Home Circle -->
+<button class="hover:text-gray-200 transition">
+<div class="w-3 h-3 rounded-full border-2 border-current"></div>
+</button>
+<!-- Multitask Square -->
+<button class="hover:text-gray-200 transition">
+<div class="w-3 h-3 rounded-sm border-2 border-current"></div>
+</button>
+</div>
+<!-- Right Quick Shortcut: Notes Folder Drawer -->
+<div class="flex items-center space-x-1 text-gray-500 text-xs">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+</svg>
+<span class="text-[11px]">Math 204 • Vector Calc</span>
+</div>
+</footer>
+<!-- END: BottomTabletNavDock -->
+<!-- Interactive Demo Script -->
+<script data-purpose="stationery-pen-interactivity">
+    // Optional lightweight script to toggle active pens when tapped
+    document.querySelectorAll('.stationery-pen').forEach(pen => {
+      pen.addEventListener('click', () => {
+        document.querySelectorAll('.stationery-pen').forEach(p => {
+          p.classList.remove('is-active');
+          const pip = p.querySelector('.rounded-full.bg-thunder-blue');
+          if (pip) pip.remove();
+        });
+        pen.classList.add('is-active');
+      });
+    });
+  </script>
+<script id="responsive-floating-controls-alignment">
+(function () {
+  function findRightHandRule() {
+    return Array.from(document.querySelectorAll('strong')).find(function (el) {
+      return (el.textContent || '').includes('Right-Hand Rule Check');
+    });
+  }
+  function findDivider() {
+    var canvas = document.querySelector('[data-purpose="digital-sheet-canvas"]');
+    if (!canvas) return null;
+    return canvas.querySelector('.border-t-2.border-dashed.border-blue-700') ||
+           canvas.querySelector('[class*="border-dashed"][class*="border-blue-700"]');
+  }
+  function alignFloatingControls() {
+    var root = document.documentElement;
+    var snip = document.querySelector('[data-purpose="floating-ai-snipping-tool"]');
+    var zoom = document.querySelector('[data-purpose="floating-zoom-control"]');
+    var divider = findDivider();
+    var rule = findRightHandRule();
+    if (snip && divider) {
+      var dr = divider.getBoundingClientRect();
+      var sr = snip.getBoundingClientRect();
+      var dividerCenter = dr.top + (dr.height / 2);
+      root.style.setProperty('--tn-snipping-top', Math.round(dividerCenter - (sr.height / 2)) + 'px');
+    }
+    if (zoom && rule) {
+      var rr = rule.parentElement.getBoundingClientRect();
+      var zr = zoom.getBoundingClientRect();
+      var ruleCenter = rr.top + (rr.height / 2);
+      root.style.setProperty('--tn-zoom-top', Math.round(ruleCenter - (zr.height / 2)) + 'px');
+    }
+  }
+  function bind() {
+    alignFloatingControls();
+    requestAnimationFrame(alignFloatingControls);
+    setTimeout(alignFloatingControls, 150);
+    setTimeout(alignFloatingControls, 500);
+    window.addEventListener('resize', alignFloatingControls, { passive: true });
+    window.addEventListener('orientationchange', alignFloatingControls, { passive: true });
+    var canvas = document.querySelector('[data-purpose="digital-sheet-canvas"]');
+    if (canvas) {
+      var scroller = canvas.querySelector('.overflow-y-auto');
+      if (scroller) scroller.addEventListener('scroll', alignFloatingControls, { passive: true });
+      if (window.ResizeObserver) {
+        var ro = new ResizeObserver(alignFloatingControls);
+        ro.observe(canvas);
+        if (scroller) ro.observe(scroller);
+      }
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(alignFloatingControls);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind, { once: true });
+  } else {
+    bind();
+  }
+})();
+</script>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" id="equation-snip-modal">
+<div class="bg-[#15171e] border border-slate-700/60 rounded-3xl shadow-2xl shadow-black/80 max-w-xl w-full p-6 text-white relative flex flex-col gap-4 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-200">
+<!-- Header -->
+<div class="flex items-center justify-between pb-3 border-b border-slate-800">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 font-mono font-bold text-lg shadow-inner">
+          ƒx
+        </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-white tracking-tight">Equation Snip • OCR Processed</h2>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-900/60 border border-purple-500/40 text-purple-200 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping inline-block"></span>
+              Gemini Math AI
+            </span>
+</div>
+<p class="text-xs text-slate-400 font-sans">Cauchy's Integral Formula detected with 99.8% confidence</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors" title="Close Modal">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+</button>
+</div>
+<!-- Rendered Equation Display Card -->
+<div class="bg-[#0d0e14] border border-purple-500/30 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group shadow-inner min-h-[140px]">
+<div class="absolute top-3 left-4 flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-purple-400"></span>
+<span class="uppercase tracking-wider text-[11px] font-semibold text-purple-300 font-sans">Rendered Equation (Cauchy's Integral Formula)</span>
+</div>
+<div class="absolute top-3 right-4 px-2 py-0.5 rounded bg-purple-950/60 border border-purple-800/60 text-[10px] font-mono text-purple-300 font-medium">
+        100% Vector Math
+      </div>
+<!-- High fidelity rendered math typography -->
+<div class="my-4 text-white text-2xl sm:text-3xl flex items-center justify-center select-all tracking-wide" style="font-family: 'Times New Roman', 'Latin Modern Math', Georgia, serif; font-style: italic;">
+<span class="mr-2">f(a)</span>
+<span class="mr-2 font-normal">=</span>
+<!-- Fraction 1 / 2πi -->
+<div class="inline-flex flex-col items-center justify-center text-center mx-2 text-xl sm:text-2xl leading-none">
+<span class="border-b border-white/80 px-2 pb-1">1</span>
+<span class="pt-1 font-normal">2π<span style="font-style: italic;">i</span></span>
+</div>
+<!-- Contour Loop Integral Symbol -->
+<div class="relative inline-flex items-center mx-2">
+<span class="text-4xl sm:text-5xl font-normal leading-none select-none text-purple-300" style="font-style: normal;">∮</span>
+<sub class="text-xs sm:text-sm font-sans text-purple-300 -ml-1 -bottom-2 relative">γ</sub>
+</div>
+<!-- Fraction f(z) / (z - a) -->
+<div class="inline-flex flex-col items-center justify-center text-center mx-1.5 text-xl sm:text-2xl leading-none">
+<span class="border-b border-white/80 px-2.5 pb-1">f(z)</span>
+<span class="pt-1">z − a</span>
+</div>
+<span class="ml-2 text-xl sm:text-2xl font-normal" style="font-style: normal;">dz</span>
+</div>
+</div>
+<!-- Editable LaTeX Code Section -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-xs px-1">
+<span class="font-semibold text-slate-300 flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          LaTeX Code
+        </span>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-purple-300 hover:text-purple-200 text-[11px] font-medium flex items-center gap-1 transition-colors">
+<svg class="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            Re-render
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 hover:text-cyan-200 text-[11px] font-medium flex items-center gap-1 transition-colors">
+<svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><rect height="13" rx="2" ry="2" width="13" x="9" y="9"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy Code
+          </button>
+</div>
+</div>
+<!-- Interactive Code Editor Box -->
+<div class="bg-[#0a0a0f] border border-slate-800 rounded-xl p-3 font-mono text-[13px] text-cyan-300 flex items-center justify-between shadow-inner focus-within:border-cyan-500/50 transition-colors overflow-x-auto">
+<div class="flex items-center whitespace-pre">
+<span>f(a) = \frac{1}{2\pi i} \oint_{\gamma} \frac{f(z)}{z - a} \, dz</span>
+<span class="w-2 h-4 bg-cyan-400 ml-1 inline-block animate-pulse"></span>
+</div>
+</div>
+</div>
+<!-- Actions & Footer -->
+<div class="pt-2 border-t border-slate-800/80 flex flex-col gap-2.5">
+<div class="flex items-center justify-between gap-3">
+<button class="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Edit LaTeX
+        </button>
+<button class="flex-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98]">
+<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Confirm &amp; Insert into Notes
+        </button>
+</div>
+<div class="text-center text-[11px] text-slate-400 flex items-center justify-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>
+<span>Saved to ThunderNotes equation clipboard • Ready to paste as editable vector stroke</span>
+</div>
+</div>
+</div>
+</div></body></html>

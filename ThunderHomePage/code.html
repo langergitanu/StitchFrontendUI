@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<!--
+  ThunderNotes - HOME SCREEN (cleaned & reorganized)
+  ------------------------------------------------
+  Target    : Android tablets 12-inch and larger (landscape-first)
+  Stack     : Plain HTML + Tailwind CSS (CDN) + Lucide icons.
+              No frameworks - fully Stitch-compatible.
+  Anatomy   : [1] Status bar
+              [2] App body -> [2a] Sidebar | [2b] Main workspace | [2c] Floating actions
+              [3] System navigation bar
+  Responsive: sm  >= 640px : 2-column card grid (fallback)
+              lg  >= 1024px: 3-column grid (12" tablets, portrait)
+              xl  >= 1280px: 4-column grid, wider sidebar + gutters (12"+ landscape)
+              2xl >= 1536px: fluid fill of the 1600px chassis (13-14" tablets)
+-->
+<html lang="en" class="h-full bg-[#0c0c10] text-gray-200 antialiased">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThunderNotes — Home</title>
+
+  <!-- ============================================================
+       EXTERNAL DEPENDENCIES
+       - Tailwind CSS v3 (CDN, forms + container-queries plugins)
+       - Google Fonts: Plus Jakarta Sans (UI) + JetBrains Mono (metadata)
+       - Lucide icons: written as <i data-lucide="icon-name"></i>
+         and rendered by lucide.createIcons() at the end of <body>
+       ============================================================ -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- ============================================================
+       TAILWIND THEME - design tokens (see DESIGN.md)
+       ============================================================ -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            /* Dark surface ladder (lowest -> highest elevation) */
+            surface: {
+              lowest: '#0c0c10',
+              base: '#111115',
+              card: '#18181f',
+              cardHover: '#1f1f28',
+              sidebar: '#141419',
+              border: '#23232c',
+              borderHover: '#333340',
+            },
+            /* Functional accents:
+               crimson = primary/active - emerald = create/success - amber = starred */
+            accent: {
+              crimson: '#dc2646',
+              crimsonHover: '#be1e39',
+              emerald: '#10b981',
+              emeraldHover: '#059669',
+              amber: '#f59e0b',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- ============================================================
+       CUSTOM CSS - thin dark scrollbars + scrollbar-hide utility
+       ============================================================ -->
+  <style data-purpose="custom-scrollbars-and-effects">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #252532;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #363648;
+    }
+
+    /* Hides scrollbar on the main workspace but keeps gesture scrolling */
+    .custom-scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .custom-scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<!-- Body: centers the simulated tablet screen inside the browser viewport -->
+
+<body class="flex h-full w-full select-none items-center justify-center bg-[#0c0c10] p-0 font-sans md:p-3 lg:p-4">
+
+  <!-- ============================================================
+       [1] TABLET CHASSIS - the simulated device screen.
+       Fills the viewport, caps at 1600px so 12-14" tablets all get
+       a full-bleed app feel. Everything below lives inside it.
+       ============================================================ -->
+  <div
+    class="relative flex h-full w-full max-w-[1600px] flex-col overflow-hidden rounded-[24px] border border-[#252530] bg-surface-base shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] ring-1 ring-white/5">
+
+    <!-- ==========================================================
+         STATUS BAR - simulated Android system bar
+         left: clock & date - center: camera dot - right: indicators
+         ========================================================== -->
+    <header
+      class="z-50 flex h-8 shrink-0 select-none items-center justify-between border-b border-surface-border/60 bg-surface-sidebar px-6 pt-1 text-xs font-semibold text-gray-400 xl:px-8">
+
+      <!-- Clock + date -->
+      <div class="flex items-center gap-3">
+        <span class="text-[12px] font-medium text-gray-200">9:41 AM</span>
+        <span class="text-[10px] font-normal text-gray-500">Wed, Oct 24</span>
+      </div>
+
+      <!-- Simulated front-facing camera -->
+      <div class="hidden h-2.5 w-2.5 rounded-full border border-gray-800 bg-[#09090c] sm:block"></div>
+
+      <!-- Notifications + WiFi + cellular + battery -->
+      <div class="flex items-center gap-3 text-gray-300">
+        <div class="flex items-center gap-1.5">
+          <i data-lucide="bell" class="h-3.5 w-3.5 text-gray-400"></i>
+          <i data-lucide="wifi" class="h-3.5 w-3.5"></i>
+          <i data-lucide="signal" class="h-3.5 w-3.5"></i>
+        </div>
+        <!-- Battery percentage + outline -->
+        <div class="flex items-center gap-1">
+          <span class="font-mono text-[11px]">98%</span>
+          <div class="flex h-2.5 w-5 items-center rounded-sm border border-gray-400 p-0.5">
+            <div class="h-full w-full rounded-[1px] bg-emerald-400"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==========================================================
+         [2] APP BODY - horizontal split:
+         [ fixed-width sidebar | fluid, scrollable workspace ]
+         'relative' anchors the floating action buttons (see [2c]).
+         ========================================================== -->
+    <div class="relative flex min-h-0 flex-1 overflow-hidden">
+
+      <!-- ======================================================
+           [2a] LEFT SIDEBAR - persistent navigation.
+           Fixed width (270px, 300px on 1280px+ tablets).
+           Top half: brand + nav. Bottom: premium upsell card.
+           ====================================================== -->
+      <aside
+        class="flex w-[270px] shrink-0 select-none flex-col justify-between border-r border-surface-border bg-surface-sidebar p-4 xl:w-[300px]">
+
+        <div class="space-y-6">
+          <!-- Brand logo + tagline -->
+          <div class="flex items-center gap-3 px-2 pt-1">
+            <div
+              class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff3355] to-accent-crimson shadow-lg shadow-red-600/30 ring-1 ring-white/20">
+              <i data-lucide="zap" class="h-5 w-5 text-white fill-white"></i>
+            </div>
+            <div>
+              <h1 class="text-base font-bold leading-tight tracking-tight text-white">ThunderNotes</h1>
+              <p class="text-[10px] font-medium text-gray-400">Tablet Precision Suite</p>
+            </div>
+          </div>
+
+          <!-- Primary navigation -->
+          <nav class="space-y-1.5">
+
+            <!-- Nav item: Library - ACTIVE state (solid crimson pill) -->
+            <a href="#"
+              class="flex cursor-pointer items-center gap-3 rounded-xl bg-accent-crimson px-3.5 py-2.5 text-white shadow-md shadow-red-600/30">
+              <i data-lucide="library" class="h-4 w-4"></i>
+              <span class="text-sm font-semibold tracking-wide">Library</span>
+            </a>
+
+            <!-- Nav item: All Notes (+ note-count badge) -->
+            <a href="#"
+              class="group flex cursor-pointer items-center justify-between rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <span class="flex items-center gap-3">
+                <i data-lucide="file-text"
+                  class="h-4 w-4 text-accent-crimson transition-transform group-hover:scale-110"></i>
+                <span class="text-sm font-medium">All Notes</span>
+              </span>
+              <span
+                class="rounded-full border border-accent-crimson/30 bg-accent-crimson/15 px-2 py-0.5 text-[11px] font-medium text-accent-crimson">6</span>
+            </a>
+
+            <!-- Nav item: All Folders -->
+            <a href="#"
+              class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <i data-lucide="folder"
+                class="h-4 w-4 text-accent-emerald transition-transform group-hover:scale-110"></i>
+              <span class="text-sm font-medium">All Folders</span>
+            </a>
+
+            <!-- Nav item: Bookmarks -->
+            <a href="#"
+              class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <i data-lucide="bookmark"
+                class="h-4 w-4 text-accent-amber transition-transform group-hover:scale-110"></i>
+              <span class="text-sm font-medium">Bookmarks</span>
+            </a>
+
+            <!-- Nav item: Trash -->
+            <a href="#"
+              class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <i data-lucide="trash-2" class="h-4 w-4 text-red-400 transition-transform group-hover:scale-110"></i>
+              <span class="text-sm font-medium">Trash</span>
+            </a>
+
+            <!-- Divider between core nav and store link -->
+            <div class="my-2 h-px bg-surface-border"></div>
+
+            <!-- Nav item: Templates Store -->
+            <a href="#"
+              class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 text-gray-400 transition-colors hover:bg-surface-card hover:text-white">
+              <i data-lucide="layout-grid"
+                class="h-4 w-4 text-gray-400 transition-colors group-hover:text-purple-400"></i>
+              <span class="text-sm font-medium">Templates Store</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Premium upsell card (pinned to sidebar bottom) -->
+        <div
+          class="space-y-3 rounded-2xl border border-surface-border bg-surface-card/90 p-3.5 shadow-md transition-colors hover:border-surface-borderHover">
+          <div class="flex items-center gap-2">
+            <i data-lucide="star" class="h-4 w-4 fill-[#fbbf2433] text-accent-amber"></i>
+            <span class="text-xs font-bold text-gray-100">Upgrade to Premium</span>
+          </div>
+          <p class="text-[11px] leading-snug text-gray-400">Unlimited cloud sync, PDF annotations &amp; tablet pen
+            stylus support.</p>
+          <button
+            class="w-full cursor-pointer rounded-xl bg-accent-crimson px-3 py-2 text-xs font-bold tracking-wide text-white shadow-md shadow-red-900/30 transition-all hover:bg-accent-crimsonHover active:scale-[0.98]">
+            Upgrade Now
+          </button>
+        </div>
+      </aside>
+
+      <!-- ======================================================
+           [2b] MAIN WORKSPACE - fluid area beside the sidebar.
+           Owns the vertical scroll; contains the sticky app bar
+           and the dashboard content sections.
+           ====================================================== -->
+      <main class="custom-scrollbar-hide flex min-w-0 flex-1 flex-col overflow-y-auto bg-surface-base">
+
+        <!-- App bar: page title (left) - search + overflow menu (right).
+             Sticky: stays pinned while the dashboard scrolls below. -->
+        <header
+          class="sticky top-0 z-30 flex items-center justify-between border-b border-surface-border/50 bg-surface-base/90 px-6 py-4 backdrop-blur-md xl:px-8">
+          <!-- Page title -->
+          <div>
+            <h2 class="text-xl font-bold tracking-tight text-white">ThunderNotes Library</h2>
+            <p class="text-xs text-gray-400">Your creative workspace</p>
+          </div>
+          <!-- Search input + overflow menu -->
+          <div class="flex items-center gap-3">
+            <div class="relative hidden items-center sm:flex">
+              <i data-lucide="search" class="pointer-events-none absolute left-3 h-4 w-4 text-gray-400"></i>
+              <input type="text" placeholder="Search"
+                class="w-56 rounded-xl border border-surface-border bg-surface-card py-1.5 pl-9 pr-4 text-xs text-gray-200 placeholder-gray-500 transition-all focus:border-red-500/50 focus:outline-none xl:w-72">
+            </div>
+            <button aria-label="More options"
+              class="flex h-9 w-9 items-center justify-center rounded-xl border border-surface-border bg-surface-card text-gray-300 transition-all hover:bg-surface-cardHover hover:text-white">
+              <i data-lucide="more-horizontal" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard content (scrolls under the sticky app bar) -->
+        <div class="space-y-6 px-6 py-4 xl:px-8">
+
+          <!-- ================================================
+               SECTION: RECENT FOLDERS
+               ================================================ -->
+          <section class="space-y-2" data-purpose="recent-folders">
+
+            <!-- Section header + "View all" link -->
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold tracking-tight text-white">Recent Folders</h3>
+                <p class="text-[11px] text-gray-400">Continue studying where you left off</p>
+              </div>
+              <a href="#"
+                class="group flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-gray-400 transition-colors hover:text-white">
+                <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                View all
+              </a>
+            </div>
+
+            <!-- Folder grid: 1 -> 2 -> 3 (>=1024px) -> 4 columns (>=1280px) -->
+            <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-4">
+
+              <!-- Folder card: Calculus (crimson theme, pinned ribbon) -->
+              <div class="group cursor-pointer">
+                <!-- Card body -->
+                <div
+                  class="relative flex h-28 flex-col justify-between overflow-hidden rounded-xl border border-surface-border bg-surface-card p-3.5 shadow-sm transition-all duration-200 hover:border-surface-borderHover hover:bg-surface-cardHover">
+                  <!-- Top row: tinted folder icon + pinned ribbon -->
+                  <div class="relative z-10 flex items-start justify-between">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-crimson/30 bg-accent-crimson/15 shadow-md shadow-red-950/30 transition-transform group-hover:scale-105">
+                      <i data-lucide="folder" class="h-5 w-5 fill-[#dc264633] text-accent-crimson"></i>
+                    </div>
+                    <!-- Amber ribbon = pinned / starred folder -->
+                    <svg class="h-4 w-3.5 text-accent-amber drop-shadow" fill="currentColor" viewBox="0 0 24 28"
+                      aria-hidden="true">
+                      <path
+                        d="M4 0C2.9 0 2 .9 2 2v24c0 .85.95 1.35 1.65.88L12 21.3l8.35 5.58c.7.47 1.65-.03 1.65-.88V2c0-1.1-.9-2-2-2H4Z" />
+                    </svg>
+                  </div>
+                  <!-- Bottom row: folder name + arrow -->
+                  <div class="relative z-10 mt-2 flex items-center justify-between">
+                    <span
+                      class="text-sm font-bold tracking-tight text-white transition-colors group-hover:text-red-400">Calculus</span>
+                    <i data-lucide="arrow-right"
+                      class="h-3.5 w-3.5 text-gray-500 transition-all group-hover:translate-x-1 group-hover:text-white"></i>
+                  </div>
+                </div>
+                <!-- Meta row: note count + storage size -->
+                <div class="mt-1 flex items-center justify-between px-1 text-[11px] font-medium text-gray-400">
+                  <span>12 notes</span>
+                  <span class="font-mono text-[10px] text-gray-500">242 MB</span>
+                </div>
+              </div>
+
+              <!-- Folder card: Linear Algebra (blue theme, color bar) -->
+              <div class="group cursor-pointer">
+                <div
+                  class="relative flex h-28 flex-col justify-between overflow-hidden rounded-xl border border-surface-border bg-surface-card p-3.5 shadow-sm transition-all duration-200 hover:border-surface-borderHover hover:bg-surface-cardHover">
+                  <div class="relative z-10 flex items-start justify-between">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-lg border border-[#2563eb]/30 bg-[#2563eb]/15 shadow-md shadow-blue-700/40 transition-transform group-hover:scale-105">
+                      <i data-lucide="folder" class="h-5 w-5 fill-[#2563eb33] text-[#2563eb]"></i>
+                    </div>
+                    <!-- Blue accent bar -->
+                    <div class="mt-1 h-1.5 w-7 rounded-full bg-[#2563eb]"></div>
+                  </div>
+                  <div class="relative z-10 mt-2 flex items-center justify-between">
+                    <span
+                      class="text-sm font-bold tracking-tight text-white transition-colors group-hover:text-accent-emerald">Linear
+                      Algebra</span>
+                    <i data-lucide="arrow-right"
+                      class="h-3.5 w-3.5 text-gray-500 transition-all group-hover:translate-x-1 group-hover:text-white"></i>
+                  </div>
+                </div>
+                <div class="mt-1 flex items-center justify-between px-1 text-[11px] font-medium text-gray-400">
+                  <span>8 notes</span>
+                  <span class="font-mono text-[10px] text-gray-500">100 MB</span>
+                </div>
+              </div>
+
+              <!-- Folder card: Discrete Mathematics (emerald theme, color bar) -->
+              <div class="group cursor-pointer">
+                <div
+                  class="relative flex h-28 flex-col justify-between overflow-hidden rounded-xl border border-surface-border bg-surface-card p-3.5 shadow-sm transition-all duration-200 hover:border-surface-borderHover hover:bg-surface-cardHover">
+                  <div class="relative z-10 flex items-start justify-between">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-lg border border-accent-emerald/30 bg-accent-emerald/15 shadow-md shadow-emerald-950/30 transition-transform group-hover:scale-105">
+                      <i data-lucide="folder" class="h-5 w-5 fill-[#10b98133] text-accent-emerald"></i>
+                    </div>
+                    <div class="mt-1 h-1.5 w-7 rounded-full bg-accent-emerald"></div>
+                  </div>
+                  <div class="relative z-10 mt-2 flex items-center justify-between">
+                    <span
+                      class="truncate text-sm font-bold tracking-tight text-white transition-colors group-hover:text-gray-200">Discrete
+                      Mathematics</span>
+                    <i data-lucide="arrow-right"
+                      class="h-3.5 w-3.5 shrink-0 text-gray-500 transition-all group-hover:translate-x-1 group-hover:text-white"></i>
+                  </div>
+                </div>
+                <div class="mt-1 flex items-center justify-between px-1 text-[11px] font-medium text-gray-400">
+                  <span>10 notes</span>
+                  <span class="font-mono text-[10px] text-gray-500">210 MB</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================
+               SECTION: RECENT FILES
+               ================================================ -->
+          <section class="space-y-2" data-purpose="recent-files">
+
+            <!-- Section header + "View all" link -->
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold tracking-tight text-white">Recent Files</h3>
+                <p class="text-[11px] text-gray-400">Notes opened this week</p>
+              </div>
+              <a href="#"
+                class="group flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-gray-400 transition-colors hover:text-white">
+                <i data-lucide="eye" class="h-3.5 w-3.5"></i>
+                View all
+              </a>
+            </div>
+
+            <!-- Note grid: 1 -> 2 -> 3 (>=1024px) -> 4 columns (>=1280px) -->
+            <div class="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-4">
+
+              <!-- Note card: Multivariable Calculus (cyan hover accent) -->
+              <div class="group cursor-pointer">
+                <!-- Preview thumbnail: simulated 16:10 note canvas -->
+                <div
+                  class="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-surface-border bg-[#1a1c33] shadow-md transition-all duration-300 group-hover:border-cyan-500/50 group-hover:shadow-cyan-950/20">
+                  <!-- Canvas gradient wash -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1d213f] via-[#17192f] to-[#0f1122]"></div>
+                  <!-- Subject label (top-left) -->
+                  <div class="absolute left-3 top-2.5 z-10">
+                    <span class="block font-mono text-[9px] uppercase tracking-wider text-gray-400">Title:</span>
+                    <span class="text-[11px] font-bold tracking-tight text-white">Calculus</span>
+                  </div>
+                  <!-- Starred ribbon (top-right) -->
+                  <svg class="absolute right-3 top-0 z-20 h-4 w-3.5 drop-shadow-md" fill="#f59e0b" viewBox="0 0 20 28"
+                    aria-hidden="true">
+                    <path d="M0 0H20V26L10 19L0 26V0Z" />
+                  </svg>
+                  <!-- Decorative sketch: graph curve + data points -->
+                  <div class="absolute inset-0 flex items-center justify-end overflow-hidden">
+                    <svg class="h-full w-full" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true">
+                      <polygon fill="#ff6b2b" points="135,150 220,150 220,70" />
+                      <polygon fill="#06b6d4" points="185,140 115,140 150,45" />
+                      <polygon fill="#67e8f9" opacity="0.4" points="190,145 120,145 155,50" />
+                      <g fill="#0f172a" opacity="0.8">
+                        <circle cx="150" cy="110" r="1.6" />
+                        <circle cx="145" cy="118" r="1.6" />
+                        <circle cx="155" cy="118" r="1.6" />
+                        <circle cx="140" cy="126" r="1.6" />
+                        <circle cx="150" cy="126" r="1.6" />
+                        <circle cx="160" cy="126" r="1.6" />
+                        <circle cx="135" cy="134" r="1.6" />
+                        <circle cx="145" cy="134" r="1.6" />
+                        <circle cx="155" cy="134" r="1.6" />
+                        <circle cx="165" cy="134" r="1.6" />
+                      </g>
+                    </svg>
+                  </div>
+                  <!-- Bottom overlay: formula snippet + page-count badge -->
+                  <div class="absolute bottom-2.5 left-3 right-3 z-10 flex items-end justify-between">
+                    <div class="rounded-lg border border-white/10 bg-black/50 px-2 py-0.5 backdrop-blur-sm">
+                      <span class="font-mono text-[9px] text-gray-200">∫₀¹ xⁿ dx = ⅟ₙ</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 rounded-full border border-white/10 bg-black/50 px-1.5 py-0.5 text-[9px] font-medium text-gray-300 backdrop-blur-sm">
+                      <i data-lucide="file-text" class="h-2.5 w-2.5 text-red-400"></i>
+                      <span>12P</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Meta row: title - pages & last edited - context menu -->
+                <div class="mt-1.5 flex items-start justify-between px-1">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="truncate text-xs font-bold text-gray-100 transition-colors group-hover:text-white">
+                      Multivariable Calculus</h4>
+                    <p class="text-[10px] text-gray-400">12 pages · Edited today</p>
+                  </div>
+                  <button aria-label="Note options" class="-mr-1 rounded-lg p-0.5 text-gray-400 hover:text-white">
+                    <i data-lucide="more-vertical" class="h-3.5 w-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Note card: Matrix Transformations (purple hover accent) -->
+              <div class="group cursor-pointer">
+                <!-- Preview thumbnail: simulated 16:10 note canvas -->
+                <div
+                  class="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-surface-border bg-[#251f47] shadow-md transition-all duration-300 group-hover:border-purple-500/50 group-hover:shadow-purple-950/20">
+                  <!-- Canvas gradient wash + orange corner flag -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#2a2253] via-[#211a43] to-[#15112c]"></div>
+                  <div class="absolute right-0 top-0 h-14 w-20 rounded-bl-3xl bg-[#ff6a1f]"></div>
+                  <!-- Subject label (top-left) -->
+                  <div class="absolute left-3 top-2.5 z-10">
+                    <span class="block font-mono text-[9px] uppercase tracking-wider text-purple-300">Title:</span>
+                    <span class="text-[11px] font-bold tracking-tight text-white">Linear Algebra</span>
+                  </div>
+                  <!-- Decorative sketch: matrix tile + dot grid -->
+                  <div class="absolute bottom-3 right-3 flex h-16 w-24 items-center justify-center">
+                    <div class="grid grid-cols-4 gap-1.5 rounded-lg p-1">
+                      <span class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span>
+                      <span class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span>
+                      <span class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span><span
+                        class="h-1.5 w-1.5 rounded-full bg-white/80"></span>
+                    </div>
+                    <div
+                      class="absolute -left-2 -top-1 h-10 w-10 rounded-lg border border-purple-300/30 bg-[#5d46b8] shadow-lg">
+                    </div>
+                  </div>
+                  <!-- Bottom overlay: snippet chip + page-count badge -->
+                  <div class="absolute bottom-2.5 left-3 right-3 z-10 flex items-end justify-between">
+                    <div class="rounded-lg border border-white/10 bg-black/50 px-2 py-0.5 backdrop-blur-sm">
+                      <span class="text-[9px] font-medium text-purple-200">Matrix notes</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 rounded-full border border-white/10 bg-black/50 px-1.5 py-0.5 text-[9px] font-medium text-gray-300 backdrop-blur-sm">
+                      <i data-lucide="file-text" class="h-2.5 w-2.5 text-red-400"></i>
+                      <span>7P</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Meta row -->
+                <div class="mt-1.5 flex items-start justify-between px-1">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="truncate text-xs font-bold text-gray-100 transition-colors group-hover:text-white">Matrix
+                      Transformations</h4>
+                    <p class="text-[10px] text-gray-400">7 pages · Yesterday</p>
+                  </div>
+                  <button aria-label="Note options" class="-mr-1 rounded-lg p-0.5 text-gray-400 hover:text-white">
+                    <i data-lucide="more-vertical" class="h-3.5 w-3.5"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Note card: Logic & Proofs (emerald hover accent) -->
+              <div class="group cursor-pointer">
+                <!-- Preview thumbnail: simulated 16:10 note canvas -->
+                <div
+                  class="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-surface-border bg-[#0c2f38] shadow-md transition-all duration-300 group-hover:border-emerald-500/50 group-hover:shadow-emerald-950/20">
+                  <!-- Canvas gradient wash -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#0e3b46] via-[#092b33] to-[#04191f]"></div>
+                  <!-- Subject label (top-left) -->
+                  <div class="absolute left-3 top-2.5 z-10">
+                    <span class="block font-mono text-[9px] uppercase tracking-wider text-teal-300">Title:</span>
+                    <span class="text-[11px] font-bold tracking-tight text-white">Discrete Math</span>
+                  </div>
+                  <!-- Decorative sketch: set-theory Venn blobs -->
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="relative ml-8 flex h-16 w-32 items-center justify-center">
+                      <div class="z-10 h-14 w-14 rounded-full bg-accent-emerald shadow-lg shadow-emerald-950/60"></div>
+                      <div
+                        class="-ml-5 flex h-14 w-14 flex-col justify-around overflow-hidden rounded-full border border-amber-300/30 bg-accent-amber py-1 shadow-lg">
+                        <div class="h-1 w-full bg-[#092b33]/60"></div>
+                        <div class="h-1 w-full bg-[#092b33]/60"></div>
+                        <div class="h-1 w-full bg-[#092b33]/60"></div>
+                        <div class="h-1 w-full bg-[#092b33]/60"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Bottom overlay: snippet chip + page-count badge -->
+                  <div class="absolute bottom-2.5 left-3 right-3 z-10 flex items-end justify-between">
+                    <div class="rounded-lg border border-white/10 bg-black/50 px-2 py-0.5 backdrop-blur-sm">
+                      <span class="text-[9px] font-medium text-teal-200">Logic &amp; Proofs</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 rounded-full border border-white/10 bg-black/50 px-1.5 py-0.5 text-[9px] font-medium text-gray-300 backdrop-blur-sm">
+                      <i data-lucide="file-text" class="h-2.5 w-2.5 text-red-400"></i>
+                      <span>5P</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Meta row -->
+                <div class="mt-1.5 flex items-start justify-between px-1">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="truncate text-xs font-bold text-gray-100 transition-colors group-hover:text-white">Logic
+                      &amp; Proofs</h4>
+                    <p class="text-[10px] text-gray-400">5 pages · Sep 21</p>
+                  </div>
+                  <button aria-label="Note options" class="-mr-1 rounded-lg p-0.5 text-gray-400 hover:text-white">
+                    <i data-lucide="more-vertical" class="h-3.5 w-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- ======================================================
+           [2c] FLOATING ACTION STACK - quick-create dock,
+           bottom-right (thumb & stylus reach zone). Anchored to
+           the app body so it stays pinned while content scrolls.
+           ====================================================== -->
+      <div class="absolute bottom-5 right-6 z-40 flex flex-col items-end gap-2 xl:bottom-6 xl:right-8">
+        <!-- Primary action: create a new note file -->
+        <button
+          class="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-accent-crimson px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-red-700/40 transition-all hover:bg-accent-crimsonHover active:scale-95">
+          <i data-lucide="file-plus" class="h-4 w-4"></i>
+          Create File
+        </button>
+        <!-- Secondary action: import an existing file -->
+        <button
+          class="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-[#2563eb] px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-blue-700/40 transition-all hover:bg-[#1d4ed8] active:scale-95">
+          <i data-lucide="download" class="h-4 w-4"></i>
+          Import File
+        </button>
+        <!-- Tertiary action: create a new folder -->
+        <button
+          class="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-accent-emerald px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-emerald-700/40 transition-all hover:bg-accent-emeraldHover active:scale-95">
+          <i data-lucide="folder-plus" class="h-4 w-4"></i>
+          Create Folder
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         [3] SYSTEM NAV BAR - simulated Android soft-key dock
+         left: back/home/recents - center: app switcher - right: pill
+         ========================================================== -->
+    <footer
+      class="z-50 flex h-8 shrink-0 select-none items-center justify-between border-t border-surface-border bg-surface-sidebar px-8 text-gray-500">
+
+      <!-- Android soft keys: back - home - recents -->
+      <div class="flex items-center gap-6">
+        <button aria-label="Back" class="transition-colors hover:text-gray-300">
+          <i data-lucide="chevron-left" class="h-3.5 w-3.5"></i>
+        </button>
+        <button aria-label="Home" class="transition-colors hover:text-gray-300">
+          <div class="h-2.5 w-2.5 rounded-full border border-gray-400"></div>
+        </button>
+        <button aria-label="Recents" class="transition-colors hover:text-gray-300">
+          <div class="h-2.5 w-2.5 rounded-[2px] border border-gray-400"></div>
+        </button>
+      </div>
+
+      <!-- Quick app dock: Notes (active) - Folders - Pen tool -->
+      <div class="flex items-center gap-3 rounded-full border border-surface-border bg-surface-card px-3 py-0.5">
+        <button aria-label="ThunderNotes (active app)"
+          class="flex h-5 w-5 items-center justify-center rounded-full bg-accent-crimson text-white">
+          <i data-lucide="zap" class="h-3 w-3 fill-white"></i>
+        </button>
+        <button aria-label="Folders app"
+          class="flex h-5 w-5 items-center justify-center text-gray-400 transition-colors hover:text-white">
+          <i data-lucide="folder" class="h-3.5 w-3.5"></i>
+        </button>
+        <button aria-label="Pen tool app"
+          class="flex h-5 w-5 items-center justify-center text-gray-400 transition-colors hover:text-white">
+          <i data-lucide="pen-tool" class="h-3.5 w-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Gesture-navigation pill -->
+      <div class="flex items-center">
+        <div class="h-1 w-20 rounded-full bg-gray-600/60"></div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Renders every <i data-lucide="..."> tag above into its SVG icon -->
+  <script data-purpose="lucide-initialization">lucide.createIcons();</script>
+</body>
+
+</html>

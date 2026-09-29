@@ -1,0 +1,240 @@
+<!DOCTYPE html><html class="h-full bg-[#0c0c10] text-gray-200 antialiased" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title class="">ThunderNotes - CreateFolderPage</title>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Lucide Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            surface: {
+              lowest: '#0c0c10',
+              base: '#111115',
+              card: '#18181f',
+              cardHover: '#1f1f28',
+              sidebar: '#141419',
+              border: '#23232c',
+              borderHover: '#333340',
+            },
+            accent: {
+              crimson: '#dc2646',
+              crimsonHover: '#be1e39',
+              emerald: '#10b981',
+              emeraldHover: '#059669',
+              amber: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars-and-effects">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252532;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #363648;
+    }
+    .custom-scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="h-full w-full bg-[#0c0c10] font-sans select-none flex items-center justify-center p-0 md:p-3 lg:p-4">
+<!-- BEGIN: Android Tablet Landscape Chassis (7:5 / Widescreen ~12+ inch tablet proportion) -->
+<div class="relative w-full max-w-[1400px] bg-surface-base rounded-[24px] border border-[#252530] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden ring-1 ring-white/5 h-full" data-screen-version="copy">
+<!-- BEGIN: Android Tablet Status Bar (Landscape wide layout) -->
+<header class="w-full h-8 px-6 pt-1 flex items-center justify-between text-xs font-semibold text-gray-400 bg-surface-sidebar border-b border-surface-border/60 z-50 select-none shrink-0">
+<div class="flex items-center space-x-3">
+<span class="tracking-normal text-gray-200 font-medium text-[12px]">9:41 AM</span>
+<span class="text-[10px] text-gray-500 font-normal">Wed, Oct 24</span>
+</div>
+<!-- Tablet center camera indicator simulation -->
+<div class="w-2.5 h-2.5 rounded-full bg-[#09090c] border border-gray-800 hidden sm:block"></div>
+<!-- Tablet indicators (WiFi, Cellular, Battery percentage) -->
+<div class="flex items-center space-x-3 text-gray-300">
+<div class="flex items-center space-x-1.5">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bell" aria-hidden="true" class="lucide lucide-bell w-3.5 h-3.5 text-gray-400"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="wifi" aria-hidden="true" class="lucide lucide-wifi w-3.5 h-3.5"><path d="M12 20h.01"></path><path d="M2 8.82a15 15 0 0 1 20 0"></path><path d="M5 12.859a10 10 0 0 1 14 0"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="signal" aria-hidden="true" class="lucide lucide-signal w-3.5 h-3.5"><path d="M2 20h.01"></path><path d="M7 20v-4"></path><path d="M12 20v-8"></path><path d="M17 20V8"></path><path d="M22 4v16"></path></svg>
+</div>
+<div class="flex items-center space-x-1">
+<span class="text-[11px] font-mono text-gray-300">98%</span>
+<div class="w-5 h-2.5 border border-gray-400 rounded-sm p-0.5 flex items-center">
+<div class="h-full w-full bg-emerald-400 rounded-[1px]"></div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: Android Tablet Status Bar -->
+<!-- BEGIN: Tablet Landscape Body (Fixed 270px Sidebar + Fluid Main Area) -->
+<div class="flex-1 flex min-h-0 overflow-hidden">
+<!-- BEGIN: Left Persistent Sidebar -->
+<aside class="w-[270px] bg-surface-sidebar border-r border-surface-border flex flex-col justify-between p-4 shrink-0 transition-all select-none">
+<div class="space-y-6">
+<!-- ThunderNotes Brand Logo -->
+<div class="flex items-center space-x-3 px-2 pt-1">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ff3355] to-accent-crimson flex items-center justify-center shadow-lg shadow-red-600/30 ring-1 ring-white/20">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="zap" aria-hidden="true" class="lucide lucide-zap w-5 h-5 text-white fill-white stroke-[2.5]"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"></path></svg>
+</div>
+<div>
+<h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1 leading-tight">
+              ThunderNotes
+            </h1>
+<p class="text-[10px] text-gray-400 font-medium">Tablet Precision Suite</p>
+</div>
+</div>
+<!-- Sidebar Navigation -->
+<nav class="space-y-1.5">
+<!-- All Notes (Active Crimson Rounded Pill) -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-accent-crimson text-white font-semibold shadow-md shadow-red-600/30 transition-all cursor-pointer" href="#"><div class="flex items-center space-x-3"><svg class="w-4 h-4 text-white stroke-[2.2]" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="m16 6 4 14"></path><path d="M12 6v14"></path><path d="M8 8v12"></path><path d="M4 4v16"></path></svg><span class="text-sm font-semibold tracking-wide">Library</span></div></a><a class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-surface-card transition-colors group cursor-pointer" href="#"><div class="flex items-center space-x-3"><svg class="w-4 h-4 text-accent-crimson group-hover:scale-110 transition-transform" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><span class="text-sm font-medium">All Notes</span></div><span class="text-xs px-2 py-0.5 font-medium bg-accent-crimson/15 border border-accent-crimson/30 text-accent-crimson rounded-full text-[11px]">6</span></a>
+<!-- All Folders -->
+<a class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-surface-card transition-colors group cursor-pointer" href="#">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="folder" aria-hidden="true" class="lucide lucide-folder w-4 h-4 text-accent-emerald group-hover:scale-110 transition-transform stroke-[2.2]"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+<span class="text-sm font-medium">All Folders</span>
+</a>
+<!-- Starred / Bookmarks -->
+<a class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-surface-card transition-colors group cursor-pointer" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bookmark" aria-hidden="true" class="lucide lucide-bookmark w-4 h-4 text-accent-amber group-hover:scale-110 transition-transform"><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"></path></svg><span class="text-sm font-medium">Bookmarks</span></a>
+<!-- Trash -->
+<a class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-surface-card transition-colors group cursor-pointer" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-4 h-4 text-red-400 group-hover:scale-110 transition-transform"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span class="text-sm font-medium">Trash</span></a>
+<!-- Divider -->
+<div class="pt-2 pb-1">
+<div class="h-px w-full bg-surface-border"></div>
+</div>
+<!-- Templates Store -->
+<a class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-surface-card transition-colors group cursor-pointer" href="#">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="layout-grid" aria-hidden="true" class="lucide lucide-layout-grid w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>
+<span class="text-sm font-medium">Templates Store</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Upgrade Card in Left Sidebar -->
+<div class="bg-surface-card/90 border border-surface-border hover:border-surface-borderHover rounded-2xl p-3.5 space-y-3 shadow-md">
+<div class="flex items-center space-x-2 text-accent-amber">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="star" aria-hidden="true" class="lucide lucide-star w-4 h-4 fill-amber-400/20 text-accent-amber"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>
+<span class="text-xs font-bold text-gray-100">Upgrade to Premium</span>
+</div>
+<p class="text-[11px] text-gray-400 leading-snug">Unlimited cloud sync, PDF annotations &amp; tablet pen stylus support.</p>
+<button class="w-full py-2 px-3 bg-accent-crimson hover:bg-accent-crimsonHover active:scale-[0.98] text-white rounded-xl text-xs font-bold tracking-wide shadow-md shadow-red-900/30 transition-all cursor-pointer">
+          Upgrade Now
+        </button>
+</div>
+</aside>
+<!-- END: Left Persistent Sidebar -->
+<!-- BEGIN: Main Dashboard Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-surface-base overflow-y-auto relative custom-scrollbar-hide">
+<!-- Top Navigation & Action Header -->
+<header class="sticky top-0 z-30 bg-surface-base/90 backdrop-blur-md px-7 py-4 flex items-center justify-between border-b border-surface-border/50">
+<!-- Title & Subtitle -->
+<div class="flex items-center space-x-3">
+<button class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface-card transition-colors lg:hidden">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" aria-hidden="true" class="lucide lucide-menu w-5 h-5"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+</button>
+<div>
+<h2 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              All Notes
+            </h2>
+<p class="text-xs text-gray-400">Your mathematics workspace</p>
+</div>
+</div>
+<!-- Top Right Actions + Quick Creation Buttons -->
+<div class="flex items-center space-x-3">
+<!-- Quick Search Bar for tablet -->
+<div class="relative hidden sm:flex items-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" aria-hidden="true" class="lucide lucide-search w-4 h-4 text-gray-400 absolute left-3 pointer-events-none"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+<input class="bg-surface-card border border-surface-border rounded-xl pl-9 pr-4 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-red-500/50 w-56 xl:w-72 transition-all" placeholder="Search" type="text">
+</div>
+<button class="w-9 h-9 rounded-xl bg-surface-card hover:bg-surface-cardHover border border-surface-border flex sm:hidden items-center justify-center text-gray-300 hover:text-white transition-all">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" aria-hidden="true" class="lucide lucide-search w-4 h-4"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+</button>
+<button class="w-9 h-9 rounded-xl bg-surface-card hover:bg-surface-cardHover border border-surface-border flex items-center justify-center text-gray-300 hover:text-white transition-all">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="more-horizontal" aria-hidden="true" class="lucide lucide-more-horizontal w-4 h-4"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+</button>
+<!-- Tablet Top Quick Action Buttons -->
+</div>
+</header>
+<!-- Scrollable Main Content -->
+<div class="px-6 py-3 space-y-3.5 py-4"><section class="space-y-2" data-purpose="recent-folders"><div class="flex items-center justify-between"><div><h3 class="text-sm font-bold text-white tracking-tight">Recent Folders</h3><p class="text-[11px] text-gray-400">Continue studying where you left off</p></div><a class="text-xs font-semibold text-gray-400 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer group" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="eye" aria-hidden="true" class="lucide lucide-eye w-3.5 h-3.5 text-gray-400 group-hover:text-white"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="">View all</span></a></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"><div class="flex flex-col group cursor-pointer"><div class="bg-surface-card hover:bg-surface-cardHover border border-surface-border hover:border-surface-borderHover rounded-xl p-3.5 transition-all duration-200 flex flex-col justify-between relative overflow-hidden shadow-sm h-28"><div class="flex items-start justify-between relative z-10"><div class="w-9 h-9 rounded-lg bg-accent-crimson/15 border border-accent-crimson/30 flex items-center justify-center shadow-md shadow-red-950/30 group-hover:scale-105 transition-transform"><svg class="w-5 h-5 text-accent-crimson stroke-current fill-accent-crimson/20 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg></div><div class="text-accent-amber -mr-0.5 -mt-0.5"><svg class="w-3.5 h-4 drop-shadow" fill="currentColor" viewBox="0 0 24 28"><path d="M4 0C2.89543 0 2 0.895431 2 2V26C2 26.8507 2.94639 27.3486 3.65279 26.8777L12 21.3129L20.3472 26.8777C21.0536 27.3486 22 26.8507 22 26V2C22 0.895431 21.1046 0 20 0H4Z"></path></svg></div></div><div class="flex items-center justify-between mt-2 relative z-10"><span class="text-sm font-bold text-white tracking-tight group-hover:text-red-400 transition-colors">Calculus</span><svg class="lucide lucide-arrow-right w-3.5 h-3.5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></div></div><div class="mt-1 px-1 flex items-center justify-between text-[11px] text-gray-400 font-medium"><span class="">12 notes</span><span class="text-[10px] text-gray-500 font-mono">412 MB</span></div></div><div class="flex flex-col group cursor-pointer"><div class="bg-surface-card hover:bg-surface-cardHover border border-surface-border hover:border-surface-borderHover rounded-xl p-3.5 transition-all duration-200 flex flex-col justify-between relative overflow-hidden shadow-sm h-28"><div class="flex items-start justify-between relative z-10"><div class="w-9 h-9 rounded-lg bg-[#2563eb]/15 border border-[#2563eb]/30 flex items-center justify-center shadow-md shadow-blue-700/40 group-hover:scale-105 transition-transform"><svg class="w-5 h-5 text-[#2563eb] stroke-current fill-[#2563eb]/20 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg></div><div class="h-1.5 w-7 rounded-full bg-[#2563eb] mt-1"></div></div><div class="flex items-center justify-between mt-2 relative z-10"><span class="text-sm font-bold text-white tracking-tight group-hover:text-accent-emerald transition-colors">Linear Algebra</span><svg class="lucide lucide-arrow-right w-3.5 h-3.5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></div></div><div class="mt-1 px-1 flex items-center justify-between text-[11px] text-gray-400 font-medium"><span class="">8 notes</span><span class="text-[10px] text-gray-500 font-mono">185 MB</span></div></div><div class="flex flex-col group cursor-pointer"><div class="bg-surface-card hover:bg-surface-cardHover border border-surface-border hover:border-surface-borderHover rounded-xl p-3.5 transition-all duration-200 flex flex-col justify-between relative overflow-hidden shadow-sm h-28"><div class="flex items-start justify-between relative z-10"><div class="w-9 h-9 rounded-lg bg-accent-emerald/15 border border-accent-emerald/30 flex items-center justify-center shadow-md shadow-emerald-950/30 group-hover:scale-105 transition-transform"><svg class="w-5 h-5 text-accent-emerald stroke-current fill-accent-emerald/20 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg></div><div class="h-1.5 w-7 rounded-full bg-accent-emerald mt-1"></div></div><div class="flex items-center justify-between mt-2 relative z-10"><span class="text-sm font-bold text-white tracking-tight truncate group-hover:text-gray-200 transition-colors">Discrete Mathematics</span><svg class="lucide lucide-arrow-right w-3.5 h-3.5 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></div></div><div class="mt-1 px-1 flex items-center justify-between text-[11px] text-gray-400 font-medium"><span class="">10 notes</span><span class="text-[10px] text-gray-500 font-mono">320 MB</span></div></div></div></section><section class="space-y-2" data-purpose="recent-files"><div class="flex items-center justify-between"><div><h3 class="text-sm font-bold text-white tracking-tight">Recent Files</h3><p class="text-[11px] text-gray-400">Notes opened this week</p></div><a class="text-xs font-semibold text-gray-400 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer group" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="eye" aria-hidden="true" class="lucide lucide-eye w-3.5 h-3.5 text-gray-400 group-hover:text-white"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="">View all</span></a></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"><div class="flex flex-col group cursor-pointer"><div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-surface-border shadow-md group-hover:border-cyan-500/50 group-hover:shadow-cyan-950/20 transition-all duration-300 bg-[#1a1c33]"><div class="absolute inset-0 bg-gradient-to-br from-[#1d213f] via-[#17192f] to-[#0f1122]"></div><div class="absolute top-2.5 left-3 z-10"><span class="font-mono text-[9px] uppercase tracking-wider text-gray-400 block">Title:</span><span class="font-sans text-[11px] font-bold text-white tracking-tight">Calculus</span></div><div class="absolute top-0 right-3 z-20"><svg class="w-3.5 h-4 drop-shadow-md" fill="#f59e0b" viewBox="0 0 20 28"><path d="M0 0H20V26L10 19L0 26V0Z"></path></svg></div><div class="absolute inset-0 flex items-center justify-end overflow-hidden"><svg class="w-full h-full" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg"><polygon fill="#ff6b2b" points="135,150 220,150 220,70"></polygon><polygon fill="#06b6d4" points="185,140 115,140 150,45"></polygon><polygon fill="#67e8f9" opacity="0.4" points="190,145 120,145 155,50"></polygon><g fill="#0f172a" opacity="0.8"><circle cx="150" cy="110" r="1.6"></circle><circle cx="145" cy="118" r="1.6"></circle><circle cx="155" cy="118" r="1.6"></circle><circle cx="140" cy="126" r="1.6"></circle><circle cx="150" cy="126" r="1.6"></circle><circle cx="160" cy="126" r="1.6"></circle><circle cx="135" cy="134" r="1.6"></circle><circle cx="145" cy="134" r="1.6"></circle><circle cx="155" cy="134" r="1.6"></circle><circle cx="165" cy="134" r="1.6"></circle></g></svg></div><div class="absolute bottom-2.5 left-3 right-3 flex items-end justify-between z-10"><div class="bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-white/10"><span class="font-mono text-[9px] text-gray-200">∫₀¹ xⁿ dx = ⅟ₙ</span></div><div class="flex items-center space-x-1 text-[9px] text-gray-300 font-medium bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" aria-hidden="true" class="lucide lucide-file-text w-2.5 h-2.5 text-red-400"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><span class="">12P</span></div></div></div><div class="mt-1.5 px-1 flex items-start justify-between"><div class="min-w-0 flex-1"><h4 class="text-xs font-bold text-gray-100 truncate group-hover:text-white transition-colors">Multivariable Calculus</h4><p class="text-[10px] text-gray-400">12 pages · Edited today</p></div><button class="p-0.5 -mr-1 text-gray-400 hover:text-white rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="more-vertical" aria-hidden="true" class="lucide lucide-more-vertical w-3.5 h-3.5"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button></div></div><div class="flex flex-col group cursor-pointer"><div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-surface-border shadow-md group-hover:border-purple-500/50 group-hover:shadow-purple-950/20 transition-all duration-300 bg-[#251f47]"><div class="absolute inset-0 bg-gradient-to-br from-[#2a2253] via-[#211a43] to-[#15112c]"></div><div class="absolute top-0 right-0 w-20 h-14 bg-[#ff6a1f] rounded-bl-3xl"></div><div class="absolute top-2.5 left-3 z-10"><span class="font-mono text-[9px] uppercase tracking-wider text-purple-300 block">Title:</span><span class="font-sans text-[11px] font-bold text-white tracking-tight">Linear Algebra</span></div><div class="absolute right-3 bottom-3 w-24 h-16 flex items-center justify-center"><div class="grid grid-cols-4 gap-1.5 p-1 rounded-lg"><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span><span class="w-1.5 h-1.5 rounded-full bg-white/80"></span></div><div class="absolute -left-2 -top-1 w-10 h-10 rounded-lg bg-[#5d46b8] shadow-lg border border-purple-300/30"></div></div><div class="absolute bottom-2.5 left-3 right-3 flex items-end justify-between z-10"><div class="bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-white/10"><span class="font-sans text-[9px] font-medium text-purple-200">Matrix notes</span></div><div class="flex items-center space-x-1 text-[9px] text-gray-300 font-medium bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" aria-hidden="true" class="lucide lucide-file-text w-2.5 h-2.5 text-red-400"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><span class="">7P</span></div></div></div><div class="mt-1.5 px-1 flex items-start justify-between"><div class="min-w-0 flex-1"><h4 class="text-xs font-bold text-gray-100 truncate group-hover:text-white transition-colors">Matrix Transformations</h4><p class="text-[10px] text-gray-400">7 pages · Yesterday</p></div><button class="p-0.5 -mr-1 text-gray-400 hover:text-white rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="more-vertical" aria-hidden="true" class="lucide lucide-more-vertical w-3.5 h-3.5"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button></div></div><div class="flex flex-col group cursor-pointer"><div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden border border-surface-border shadow-md group-hover:border-emerald-500/50 group-hover:shadow-emerald-950/20 transition-all duration-300 bg-[#0c2f38]"><div class="absolute inset-0 bg-gradient-to-br from-[#0e3b46] via-[#092b33] to-[#04191f]"></div><div class="absolute top-2.5 left-3 z-10"><span class="font-mono text-[9px] uppercase tracking-wider text-teal-300 block">Title:</span><span class="font-sans text-[11px] font-bold text-white tracking-tight">Discrete Math</span></div><div class="absolute inset-0 flex items-center justify-center"><div class="relative w-32 h-16 flex items-center justify-center ml-8"><div class="w-14 h-14 rounded-full bg-accent-emerald shadow-lg shadow-emerald-950/60 z-10"></div><div class="w-14 h-14 rounded-full -ml-5 bg-accent-amber shadow-lg overflow-hidden flex flex-col justify-around py-1 border border-amber-300/30"><div class="h-1 bg-[#092b33]/60 w-full"></div><div class="h-1 bg-[#092b33]/60 w-full"></div><div class="h-1 bg-[#092b33]/60 w-full"></div><div class="h-1 bg-[#092b33]/60 w-full"></div></div></div></div><div class="absolute bottom-2.5 left-3 right-3 flex items-end justify-between z-10"><div class="bg-black/50 backdrop-blur-sm px-2 py-0.5 rounded-lg border border-white/10"><span class="font-sans text-[9px] font-medium text-teal-200">Logic &amp; Proofs</span></div><div class="flex items-center space-x-1 text-[9px] text-gray-300 font-medium bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" aria-hidden="true" class="lucide lucide-file-text w-2.5 h-2.5 text-red-400"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><span class="">5P</span></div></div></div><div class="mt-1.5 px-1 flex items-start justify-between"><div class="min-w-0 flex-1"><h4 class="text-xs font-bold text-gray-100 truncate group-hover:text-white transition-colors">Logic &amp; Proofs</h4><p class="text-[10px] text-gray-400">5 pages · Sep 21</p></div><button class="p-0.5 -mr-1 text-gray-400 hover:text-white rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="more-vertical" aria-hidden="true" class="lucide lucide-more-vertical w-3.5 h-3.5"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button></div></div></div></section></div>
+<!-- BEGIN: Floating Action Buttons (Accessible bottom-right tablet ergonomics) -->
+<div class="absolute bottom-4 right-6 flex flex-col items-end gap-2 z-30"><button class="flex items-center space-x-2 bg-accent-crimson hover:bg-accent-crimsonHover active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-lg shadow-red-700/40 border border-white/10 transition-all cursor-pointer"><svg class="w-4 h-4 text-white" fill="none" height="16" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M12 18v-6"></path><path d="M9 15h6"></path></svg><span class="">Create File</span></button><button class="flex items-center space-x-2 bg-[#2563eb] hover:bg-[#1d4ed8] active:scale-95 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-lg shadow-blue-700/40 border border-white/10 transition-all cursor-pointer"><svg class="w-4 h-4 text-white" fill="none" height="16" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg><span class="">Import File</span></button><button class="relative overflow-hidden flex items-center space-x-2 bg-gradient-to-r from-[#22c55e] via-[#10b981] to-[#059669] text-white font-bold text-xs py-2 px-3.5 rounded-xl border border-emerald-300/60 ring-2 ring-emerald-400 ring-offset-2 ring-offset-[#111115] transition-all cursor-pointer select-none" style="transform: scale(0.95); box-shadow: rgba(16, 185, 129, 0.85) 0px 0px 25px, rgba(16, 185, 129, 0.5) 0px 0px 50px, rgba(255, 255, 255, 0.6) 0px 1px 2px inset;">
+  <div class="absolute inset-0 bg-gradient-to-b from-white/30 via-white/5 to-transparent pointer-events-none rounded-xl"></div>
+  <svg class="w-4 h-4 text-white drop-shadow" fill="none" height="16" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path>
+    <path d="M12 10v6"></path>
+    <path d="M9 13h6"></path>
+  </svg>
+  <span class="relative z-10 drop-shadow">Create Folder</span>
+</button></div>
+<!-- END: Floating Action Buttons -->
+</main>
+<!-- END: Main Dashboard Content Area -->
+</div>
+<!-- END: Tablet Landscape Body -->
+<!-- BEGIN: Android Tablet System Navigation Bar (Landscape 3-button or pill gesture dock) -->
+<footer class="h-8 bg-surface-sidebar border-t border-surface-border px-8 flex items-center justify-between z-50 text-gray-500 select-none shrink-0">
+<!-- Android soft navigation icons (left side) -->
+<div class="flex items-center space-x-6 text-gray-500 text-xs">
+<button class="hover:text-gray-300 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-left" aria-hidden="true" class="lucide lucide-chevron-left w-3.5 h-3.5"><path d="m15 18-6-6 6-6"></path></svg>
+</button>
+<button class="hover:text-gray-300 transition-colors">
+<div class="w-2.5 h-2.5 rounded-full border border-gray-400"></div>
+</button>
+<button class="hover:text-gray-300 transition-colors">
+<div class="w-2.5 h-2.5 rounded-[2px] border border-gray-400"></div>
+</button>
+</div>
+<!-- Center App Dock Switchers -->
+<div class="flex items-center space-x-3 bg-surface-card px-3 py-0.5 rounded-full border border-surface-border">
+<button class="w-5 h-5 rounded-full bg-accent-crimson text-white flex items-center justify-center shadow-xs">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="zap" aria-hidden="true" class="lucide lucide-zap w-3 h-3 fill-white"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"></path></svg>
+</button>
+<button class="w-5 h-5 text-gray-400 hover:text-white flex items-center justify-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="folder" aria-hidden="true" class="lucide lucide-folder w-3.5 h-3.5"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+</button>
+<button class="w-5 h-5 text-gray-400 hover:text-white flex items-center justify-center">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="pen-tool" aria-hidden="true" class="lucide lucide-pen-tool w-3.5 h-3.5"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"></path><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"></path><path d="m2.3 2.3 7.286 7.286"></path><circle cx="11" cy="11" r="2"></circle></svg>
+</button>
+</div>
+<!-- Right Android Gesture/Keyboard Pill Bar -->
+<div class="flex items-center space-x-2">
+<div class="w-20 h-1 bg-gray-600/60 rounded-full"></div>
+</div>
+</footer>
+<!-- END: Android Tablet System Navigation Bar -->
+<div class="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-4"><div class="w-full max-w-[390px] bg-[#161720] border border-[#222430] rounded-[28px] shadow-2xl flex flex-col overflow-hidden text-white"><div class="pt-8 pb-4 flex justify-center items-center"><div class="relative w-28 h-36 bg-[#f4f2eb] rounded-2xl shadow-md flex flex-col justify-between overflow-hidden border border-black/5"><div class="h-5 border-b border-black/5 w-full bg-[#f1efe7]"></div><div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center"><div class="w-full h-[2.5px] bg-[#22252d]"></div><div class="absolute w-4 h-4 rounded-full bg-[#20232b] shadow-sm flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-[#13151b]"></div></div></div><div class="h-2 bg-[#eae7de] w-full"></div></div></div><div class="px-6 pt-2 pb-5 space-y-4"><h2 class="text-lg font-bold text-white tracking-tight">Create New Folder</h2><div><input type="text" placeholder="Folder name" class="w-full bg-[#12131a] border border-[#1e4976] focus:border-[#38bdf8] focus:outline-none rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 shadow-inner"></div><div class="flex items-center justify-between pt-1"><button type="button" class="p-0.5 rounded-xl border-2 border-[#2563eb] flex items-center justify-center"><span class="w-7 h-7 rounded-lg bg-white block"></span></button><button type="button" class="w-8 h-8 rounded-lg bg-[#414757] hover:opacity-90 transition-opacity"></button><button type="button" class="w-8 h-8 rounded-lg bg-[#e0a994] hover:opacity-90 transition-opacity"></button><button type="button" class="w-8 h-8 rounded-lg bg-[#da7575] hover:opacity-90 transition-opacity"></button><button type="button" class="w-8 h-8 rounded-lg bg-[#7592b8] hover:opacity-90 transition-opacity"></button><button type="button" class="w-8 h-8 rounded-lg bg-[#73a99e] hover:opacity-90 transition-opacity"></button><button type="button" class="w-8 h-8 rounded-lg bg-[#d9ac63] hover:opacity-90 transition-opacity"></button></div></div><div class="border-t border-[#20222e] px-6 py-4 flex items-center justify-end space-x-6"><button type="button" class="text-sm font-semibold text-[#38bdf8] hover:text-[#0ea5e9] transition-colors">Cancel</button><button type="button" class="text-sm font-bold text-[#38bdf8] hover:text-[#0ea5e9] transition-colors">Create</button></div></div></div></div>
+<!-- END: Android Tablet Landscape Chassis -->
+<!-- Lucide Icons Initialization -->
+<script data-purpose="lucide-initialization">
+  lucide.createIcons();
+</script>
+
+
+
+
+</body></html>
