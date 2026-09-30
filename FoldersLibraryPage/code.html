@@ -207,44 +207,44 @@
                 <i data-lucide="folder" class="h-4 w-4"></i>
                 <span class="text-sm font-semibold tracking-wide">All Folders</span>
               </span>
+            </a>
+            <!-- Nav item: Bookmarks -->
+            <a href="#"
+              class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <span class="flex items-center gap-3">
+                <i data-lucide="bookmark"
+                  class="h-4 w-4 text-amber-500 transition-transform group-hover:scale-110 group-hover:text-amber-300"></i>
+                <span class="text-sm font-medium">Bookmarks</span>
+              </span>
+            </a>
+            <!-- Nav item: Templates -->
+            <a href="#"
+              class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <span class="flex items-center gap-3">
+                <i data-lucide="layout-grid"
+                  class="h-4 w-4 text-purple-500 transition-transform group-hover:scale-110 group-hover:text-purple-300"></i>
+                <span class="text-sm font-medium">Templates</span>
+              </span>
+            </a>
+            <!-- Nav item: Trash -->
+            <a href="#"
+              class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
+              <span class="flex items-center gap-3">
+                <i data-lucide="trash-2"
+                  class="h-4 w-4 text-red-500 transition-transform group-hover:scale-110 group-hover:text-red-300"></i>
+                <span class="text-sm font-medium">Trash</span>
+              </span>
+            </a>
+            <!-- Divider between core nav and store link -->
+            <div class="my-2 h-px bg-surface-border"></div>
 
-              <!-- Nav item: Bookmarks -->
-              <a href="#"
-                class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
-                <span class="flex items-center gap-3">
-                  <i data-lucide="bookmark"
-                    class="h-4 w-4 text-amber-500 transition-transform group-hover:scale-110 group-hover:text-amber-300"></i>
-                  <span class="text-sm font-medium">Bookmarks</span>
-                </span>
-              </a>
-              <!-- Nav item: Templates -->
-              <a href="#"
-                class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
-                <span class="flex items-center gap-3">
-                  <i data-lucide="layout-grid"
-                    class="h-4 w-4 text-purple-500 transition-transform group-hover:scale-110 group-hover:text-purple-300"></i>
-                  <span class="text-sm font-medium">Templates</span>
-                </span>
-              </a>
-              <!-- Nav item: Trash -->
-              <a href="#"
-                class="group flex cursor-pointer items-center rounded-xl px-3.5 py-2.5 text-gray-300 transition-colors hover:bg-surface-card hover:text-white">
-                <span class="flex items-center gap-3">
-                  <i data-lucide="trash-2"
-                    class="h-4 w-4 text-red-500 transition-transform group-hover:scale-110 group-hover:text-red-300"></i>
-                  <span class="text-sm font-medium">Trash</span>
-                </span>
-              </a>
-              <!-- Divider between core nav and store link -->
-              <div class="my-2 h-px bg-surface-border"></div>
-
-              <!-- Nav item: Plugins (orange icon + grey label) -->
-              <a href="#"
-                class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 text-grey-300 transition-colors hover:bg-surface-card">
-                <i data-lucide="code-2"
-                  class="h-4 w-4 text-sky-500 transition-transform group-hover:scale-110 group-hover:text-sky-300"></i>
-                <span class="text-sm font-medium">Plugins</span>
-              </a>
+            <!-- Nav item: Plugins (sky-blue icon, grey label) -->
+            <a href="#"
+              class="group flex cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2.5 transition-colors hover:bg-surface-card">
+              <i data-lucide="code-2"
+                class="h-4 w-4 text-sky-500 transition-transform group-hover:scale-110 group-hover:text-sky-300"></i>
+              <span class="text-sm font-medium">Plugins</span>
+            </a>
           </nav>
         </div>
 
@@ -307,11 +307,10 @@
           </div>
 
 
-          <!-- Row: filter chips (left) + primary actions (right).
-               The quick-create dock lives on the Home page only; here the
-               note actions (Import / Create Note) join the folder action
-               in the row below the Sort control. All three pills share the
-               same -700 shade: blue / red / emerald. -->
+          <!-- Row: filter chips (left) + primary action (right).
+               The quick-create dock lives on the Home page only; the note
+               actions (Import Note / Create Note) live on the Notes
+               Library page header. -->
           <div class="flex flex-wrap items-center justify-between gap-2.5 pt-1">
             <div class="flex items-center gap-2.5">
               <button
