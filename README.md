@@ -42,4 +42,23 @@ the original Stitch design-token spec.
 The layout is a fluid flex column capped at a 1600 px chassis (library pages) or
 full-bleed (canvas pages). Verified free of horizontal overflow from 480 px up
 to 1280 px; grids step 1 → 2 → 3 → 4 columns at Tailwind's `sm` / `lg` / `xl`
-breakpoints. Desktop reference composition: 1280 × 1024.
+breakpoints. Desktop reference composition: 1204 × 1080 (also verified at
+1280 × 1024 — pixel-identical).
+
+Below 768 px the canvas pages' dense header rows (notebook tab strip and the
+workflow toolbar) become internally scrollable toolbars instead of stretching
+the page; the customization popup row wraps onto extra lines below 1280 px
+instead of clipping. Both behaviours are driven by media-query-scoped CSS and
+never evaluate at desktop widths.
+
+## Final polish (round 3)
+
+Applied on top of the user's own fixes (search-bar repair, MathML equation
+chips, lifted lasso icon, colour/typography pass, Tailwind class sorting):
+
+- Misleading comments corrected; section comments added for every header
+  sub-row, tray sub-section, MathML chip and the lasso tool.
+- Google Fonts consolidated into one request per canvas page (same families
+  and weights).
+- Responsive hardening as described above — desktop rendering verified
+  pixel-identical at 1204 × 1080 and 1280 × 1024.

@@ -13,8 +13,10 @@
                [4] System gesture dock
   Responsive : The shell is a fluid flex column; the canvas sheet flexes
                to fill whatever space the toolbars leave behind, so the
-               layout works at any tablet size while keeping the exact
-               1280x1024 desktop composition.
+               layout works at any tablet size while preserving the
+               desktop composition (verified at 1204x1080 / 1280x1024).
+               Below 768px the dense header rows scroll horizontally
+               instead of stretching the page.
 -->
 <html lang="en" class="h-full">
   <head>
@@ -70,9 +72,9 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <!-- Handwritten lecture-note families (Caveat / Kalam / Architects Daughter) -->
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;family=Kalam:wght@300;400;700&amp;family=Architects+Daughter&amp;display=swap" rel="stylesheet" />
+    <!-- Google Fonts - UI sans + monospace + handwritten lecture-note
+         families, loaded in a single consolidated request -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Caveat:wght@500;700&amp;family=Kalam:wght@300;400;700&amp;family=Architects+Daughter&amp;display=swap" rel="stylesheet" />
 
     <!-- ============================================================
        CUSTOM CSS - scrollbars, ruled-paper texture, pen animations
@@ -86,6 +88,23 @@
       .no-scrollbar {
         -ms-overflow-style: none;
         scrollbar-width: none;
+      }
+
+      /* ---- Responsive hardening (screens narrower than 768px) ----
+         The two dense header rows become horizontally scrollable
+         toolbars instead of stretching the page. Desktop / tablet
+         widths (>= 768px) are completely unaffected. */
+      @media (max-width: 767px) {
+        [data-purpose="dedicated-note-tabs-row"],
+        [data-purpose="row-secondary-action-bar"] {
+          overflow-x: auto;
+          scrollbar-width: none; /* Firefox: hide the scrollbar rail */
+        }
+
+        [data-purpose="dedicated-note-tabs-row"]::-webkit-scrollbar,
+        [data-purpose="row-secondary-action-bar"]::-webkit-scrollbar {
+          display: none; /* Chrome / Edge / Safari: hide the rail */
+        }
       }
     </style>
     <style data-purpose="canvas-ruled-paper">
@@ -222,6 +241,7 @@
     <header class="bg-obsidian-900 border-obsidian-800 z-40 flex w-full flex-shrink-0 flex-col border-b shadow-xl" data-purpose="two-row-app-header">
       <!-- ROW 1: Document Management, Workflow Tools & App Customization -->
       <div class="flex w-full flex-col" data-purpose="header-top-navigation-sections">
+      <!-- [2a-1] Notebook tab strip: open notes as tabs + theme toggle and window options -->
         <div class="bg-obsidian-800 border-obsidian-700 flex h-14 items-center justify-between border-b px-3 select-none" data-purpose="dedicated-note-tabs-row">
           <div class="flex h-full items-center space-x-1.5 pt-1.5">
             <button class="hover:bg-obsidian-750 flex h-7 w-7 items-center justify-center self-center rounded-lg text-gray-400 transition hover:text-white" title="Back to Library">
@@ -299,6 +319,7 @@
             </button>
           </div>
         </div>
+      <!-- [2a-2] Workflow toolbar: thumbnails, page navigation, undo/redo/paste, insert tools, view & settings cluster -->
         <div class="border-obsidian-800/80 bg-obsidian-900 flex h-11 items-center justify-between border-b px-4" data-purpose="row-secondary-action-bar">
           <div class="flex items-center space-x-2">
             <button class="hover:bg-obsidian-800 flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition hover:text-white" title="Thumbnail Overview">
@@ -338,6 +359,7 @@
               <div class="bg-obsidian-750 mx-1 h-4 w-px"></div>
             </div>
           </div>
+          <!-- Document insert tools: text box, image/scan, ruler & guides, coordinate grid -->
           <nav data-purpose="document-insert-tools" class="border-obsidian-750 ml-[90px] flex items-center space-x-1 rounded-xl border bg-[#0c192c] px-2 py-1">
             <button class="hover:bg-obsidian-750 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:text-white" title="Text Box (T)">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
@@ -434,6 +456,7 @@
       </div>
       <!-- ROW 2: Dedicated Drawing Tool Set & Pen Customization Tray -->
       <div class="bg-obsidian-900 relative z-30 flex h-16 items-center justify-between overflow-visible border-t border-b border-[rgba(255,255,255,0.07)] border-[rgba(255,255,255,0.035)] px-4 shadow-inner" data-purpose="row-2-drawing-toolset-tray">
+        <!-- [2b-1] Stationery pen rack: writing & selection instruments -->
         <div class="relative z-30 flex h-full w-[30%] shrink-0 items-center justify-center space-x-1.5 overflow-visible pt-0.5" data-purpose="stationery-pen-rack">
           <button class="stationery-pen group relative flex h-14 w-11 translate-y-1 items-start justify-center rounded-xl pt-1 transition-all" title="Fountain Pen">
             <svg class="h-12 w-8 scale-110 -rotate-12 transition-transform group-hover:scale-105" fill="none" viewBox="0 0 32 48">
@@ -478,6 +501,7 @@
               </g>
             </svg>
           </button>
+          <!-- Freehand lasso selector: dashed blue selection loop with knotted trailing tail -->
           <button class="stationery-pen group hover:bg-obsidian-800/60 relative flex h-14 w-11 translate-y-1 items-start justify-center rounded-xl pt-1 transition-all" title="Lasso Selection">
             <svg class="text-thunder-blue h-10 w-7 scale-110 transition-transform group-hover:scale-105" fill="none" viewBox="0 0 28 36">
               <ellipse cx="14" cy="15" rx="9" ry="11" stroke="#38bdf8" stroke-dasharray="3.5 2.5" stroke-width="1.7"></ellipse>
@@ -539,6 +563,7 @@
             </svg>
           </button>
         </div>
+        <!-- [2b-2] Quick color palette (scrolls internally when the tray narrows) -->
         <div class="no-scrollbar flex w-[20%] shrink-0 items-center justify-start space-x-1 overflow-x-auto xl:justify-center" data-purpose="quick-color-palette">
           <div class="bg-obsidian-900 border-obsidian-750 flex items-center space-x-1.5 rounded-full border px-1 py-1">
             <button class="h-4 w-4 rounded-full transition-transform hover:scale-125" style="background-color: rgb(239, 68, 68)" title="Red"></button>
@@ -564,6 +589,7 @@
             </button>
           </div>
         </div>
+        <!-- [2b-3] Stroke width presets -->
         <div class="flex w-[15%] shrink-0 items-center justify-center space-x-2" data-purpose="stroke-width-presets">
           <button class="hover:bg-obsidian-800 flex h-10 w-8 flex-col items-center justify-center rounded-lg transition" title="Stroke 0.35 mm">
             <span class="my-1 h-2 w-2 rounded-full bg-gray-400"></span>
@@ -578,6 +604,7 @@
             <span class="font-mono text-[10px] text-gray-400">0.80</span>
           </button>
         </div>
+        <!-- [2b-4] Finger/stylus & drawing-mode toggles (scrolls internally when the tray narrows) -->
         <div class="no-scrollbar flex w-[35%] shrink-0 items-center justify-start space-x-2 overflow-x-auto xl:justify-center" data-purpose="drawing-toggles">
           <button class="bg-obsidian-800 border-thunder-blue/30 text-thunder-blue hover:bg-obsidian-750 flex h-12 w-12 items-center justify-center rounded-xl border transition" title="Auto Shape Detection">
             <svg viewBox="0 0 400 400" class="h-full w-full object-contain p-0.5">

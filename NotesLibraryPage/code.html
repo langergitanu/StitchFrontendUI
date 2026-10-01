@@ -245,7 +245,9 @@
                 <p class="text-xs font-normal text-gray-400 md:text-sm">All notes, notebooks and lecture documents</p>
               </div>
               <div class="flex items-center gap-3">
-                <!-- Search pill -->
+                <!-- Search pill: flexible width (shrinks to a 120px minimum,
+                     grows to w-72 from md up) so the header row never
+                     overflows on narrow screens -->
                 <div class="relative flex w-64 min-w-[120px] shrink items-center md:w-72">
                   <i data-lucide="search" class="pointer-events-none absolute left-3.5 h-4 w-4 text-gray-400"></i>
                   <input type="text" placeholder="Search notes..." class="w-full rounded-full border border-white/5 bg-[#1b1b22] py-2 pr-4 pl-9 text-xs text-gray-200 placeholder-gray-500 transition-colors focus:border-red-500/50 focus:outline-none" />
